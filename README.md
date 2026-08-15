@@ -1,1 +1,1829 @@
-# FLU-NCIA-LEITORA---DPG
+# FLUENCIA-LEITORA-DPG
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desafio da Leitura</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top, #1f9d55 0%, #0b6b3a 35%, #063b23 100%);
+      color: white;
+      overflow-x: hidden;
+      transition: background .65s ease;
+    }
+
+    /* O sistema utiliza a identidade visual verde em todos os níveis. */
+
+    .game-container {
+      width: 95%;
+      max-width: 1300px;
+      margin: auto;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* ==========================
+       CABEÇALHO
+    ========================== */
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.20);
+      backdrop-filter: blur(10px);
+
+      padding: 18px 25px;
+      border-radius: 22px;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      color: #fff;
+    }
+
+    .header p {
+      margin-top: 5px;
+      opacity: .8;
+    }
+
+    .score-box {
+      background: #ffffff;
+      color: #13653c;
+      padding: 12px 22px;
+      border-radius: 15px;
+      font-weight: bold;
+      font-size: 18px;
+      box-shadow: 0 8px 25px rgba(0,0,0,.18);
+    }
+
+    /* ==========================
+       TELA INICIAL
+    ========================== */
+
+    #startScreen {
+      min-height: 75vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .start-card {
+      width: 100%;
+      max-width: 750px;
+
+      background: rgba(255,255,255,.97);
+      color: #163828;
+
+      padding: 45px;
+      border-radius: 30px;
+      text-align: center;
+
+      box-shadow: 0 25px 80px rgba(0,0,0,.30);
+    }
+
+    .start-card .icon {
+      font-size: 80px;
+      margin-bottom: 15px;
+    }
+
+    .start-card h2 {
+      font-size: 42px;
+      color: #08783f;
+      margin-bottom: 15px;
+    }
+
+    .start-card p {
+      font-size: 19px;
+      line-height: 1.6;
+      margin-bottom: 25px;
+    }
+
+    .levels-preview {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 25px 0;
+    }
+
+    .level-preview {
+      background: #edf9f2;
+      padding: 20px 10px;
+      border-radius: 18px;
+      border: 2px solid #d4f0df;
+    }
+
+    .level-preview strong {
+      display: block;
+      color: #08783f;
+      margin-bottom: 7px;
+      font-size: 18px;
+    }
+
+    .btn {
+      border: none;
+      cursor: pointer;
+      border-radius: 16px;
+
+      padding: 16px 28px;
+      font-size: 18px;
+      font-weight: bold;
+
+      transition: .25s;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+    }
+
+    .btn-primary {
+      color: white;
+      background: linear-gradient(135deg, #10a759, #08733e);
+      box-shadow: 0 10px 25px rgba(16,167,89,.3);
+    }
+
+    .btn-next {
+      color: #0c6337;
+      background: #fff;
+      min-width: 200px;
+    }
+
+    .btn-next:hover {
+      background: #e9fff2;
+    }
+
+    /* ==========================
+       ÁREA DO JOGO
+    ========================== */
+
+    #gameScreen {
+      display: none;
+    }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+    }
+
+    .reading-card {
+      background: rgba(255,255,255,.97);
+      color: #1b3328;
+
+      border-radius: 30px;
+      padding: 35px;
+
+      min-height: 620px;
+
+      box-shadow: 0 25px 60px rgba(0,0,0,.25);
+
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .level-badge {
+      display: inline-block;
+      background: #dff7e8;
+      color: #08733e;
+
+      border-radius: 100px;
+      padding: 9px 18px;
+
+      font-weight: bold;
+      font-size: 16px;
+
+      margin-bottom: 15px;
+    }
+
+    #levelTitle {
+      font-size: 30px;
+      color: #0b7040;
+      margin-bottom: 10px;
+    }
+
+    #instructions {
+      font-size: 17px;
+      color: #657268;
+    }
+
+    /* PALAVRA */
+
+    .word-area {
+      flex: 1;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      padding: 40px 10px;
+      text-align: center;
+    }
+
+    #wordDisplay {
+      font-size: clamp(45px, 8vw, 90px);
+      font-weight: 900;
+      color: #163b28;
+
+      letter-spacing: 3px;
+
+      animation: wordEnter .35s ease;
+    }
+
+    @keyframes wordEnter {
+      from {
+        opacity: 0;
+        transform: scale(.7);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* TEXTO */
+
+    #textDisplay {
+      display: none;
+
+      font-size: 25px;
+      line-height: 1.65;
+      text-align: left;
+
+      color: #1e382b;
+
+      background: #f1faf5;
+      border-radius: 20px;
+      padding: 25px;
+
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .level3-paragraph {
+      margin: 0 0 18px;
+      padding: 15px 17px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.75);
+      color: #32463a;
+      opacity: .82;
+      transform: translateY(8px);
+      animation: paragraphEnter .45s ease forwards;
+      transition: background .35s ease, color .35s ease, box-shadow .35s ease, transform .35s ease;
+    }
+
+    .level3-paragraph.active {
+      background: #dff7e8;
+      color: #08733e;
+      font-weight: 800;
+      box-shadow: 0 0 0 3px rgba(16,167,89,.20), 0 10px 24px rgba(8,115,62,.14);
+      transform: scale(1.015);
+      opacity: 1;
+    }
+
+    .level3-paragraph.read {
+      opacity: .72;
+      background: #f3f7f5;
+      color: #53645b;
+    }
+
+    @keyframes paragraphEnter {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .controls {
+      text-align: center;
+    }
+
+    .controls .btn {
+      background: linear-gradient(135deg, #14a85b, #08733e);
+      color: white;
+    }
+
+    /* ==========================
+       PROGRESSO
+    ========================== */
+
+    .progress-container {
+      margin-top: 20px;
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #51675a;
+    }
+
+    .progress-bar {
+      height: 14px;
+      border-radius: 100px;
+      background: #d8e7de;
+      overflow: hidden;
+    }
+
+    #progress {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #16b560, #72d698);
+      border-radius: inherit;
+      transition: width .3s;
+    }
+
+    /* ==========================
+       BOMBA
+    ========================== */
+
+    .timer-panel {
+      background: rgba(255,255,255,.12);
+
+      border-radius: 30px;
+      padding: 25px 18px;
+
+      border: 1px solid rgba(255,255,255,.20);
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      min-height: 620px;
+    }
+
+    .timer-panel h3 {
+      font-size: 22px;
+      margin-bottom: 15px;
+    }
+
+    .bomb-wrapper {
+      position: relative;
+
+      width: 190px;
+      height: 250px;
+
+      margin-top: 25px;
+    }
+
+    .fuse {
+      position: absolute;
+
+      width: 75px;
+      height: 55px;
+
+      border-top: 8px solid #d6b16e;
+      border-radius: 50%;
+
+      top: 5px;
+      left: 105px;
+
+      transform: rotate(25deg);
+    }
+
+    .spark {
+      position: absolute;
+
+      top: -5px;
+      right: 5px;
+
+      font-size: 37px;
+
+      animation: spark .25s infinite alternate;
+    }
+
+    @keyframes spark {
+      from {
+        transform: scale(.85) rotate(-10deg);
+      }
+
+      to {
+        transform: scale(1.25) rotate(10deg);
+      }
+    }
+
+    .bomb {
+      position: absolute;
+
+      width: 170px;
+      height: 170px;
+
+      bottom: 10px;
+      left: 5px;
+
+      border-radius: 50%;
+
+      background:
+        radial-gradient(circle at 35% 30%, #555, #151515 60%, #000);
+
+      box-shadow:
+        inset -15px -20px 30px rgba(0,0,0,.7),
+        0 20px 30px rgba(0,0,0,.4);
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      animation: bombPulse 1s infinite alternate;
+    }
+
+    @keyframes bombPulse {
+      from {
+        transform: scale(1);
+      }
+
+      to {
+        transform: scale(1.04);
+      }
+    }
+
+    .bomb-timer {
+      background: #111;
+
+      border: 4px solid #404040;
+      border-radius: 12px;
+
+      color: #ff3b30;
+
+      padding: 10px 15px;
+
+      font-family: "Courier New", monospace;
+      font-size: 31px;
+      font-weight: bold;
+
+      text-shadow: 0 0 10px red;
+    }
+
+    .timer-label {
+      margin-top: 12px;
+      font-size: 15px;
+      opacity: .75;
+    }
+
+    .stats {
+      width: 100%;
+      margin-top: 30px;
+    }
+
+    .stat {
+      background: rgba(255,255,255,.13);
+      padding: 14px;
+
+      margin-bottom: 10px;
+
+      border-radius: 14px;
+    }
+
+    .stat span {
+      display: block;
+      font-size: 13px;
+      opacity: .75;
+    }
+
+    .stat strong {
+      font-size: 23px;
+    }
+
+    /* ==========================
+       TELA DE NIVEL
+    ========================== */
+
+    #levelComplete,
+    #gameComplete {
+      display: none;
+
+      position: fixed;
+      inset: 0;
+
+      background: rgba(0,0,0,.72);
+      backdrop-filter: blur(8px);
+
+      z-index: 20;
+
+      align-items: center;
+      justify-content: center;
+
+      padding: 20px;
+    }
+
+    .modal-card {
+      background: white;
+      color: #193526;
+
+      width: 100%;
+      max-width: 600px;
+
+      padding: 45px;
+
+      border-radius: 30px;
+
+      text-align: center;
+
+      box-shadow: 0 30px 80px rgba(0,0,0,.4);
+    }
+
+    .modal-card .emoji {
+      font-size: 75px;
+    }
+
+    .modal-card h2 {
+      font-size: 36px;
+      color: #08733e;
+
+      margin: 15px 0;
+    }
+
+    .modal-card p {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+
+      gap: 12px;
+
+      margin: 25px 0;
+    }
+
+    .result-box {
+      padding: 18px;
+      border-radius: 18px;
+
+      background: #eef9f3;
+    }
+
+    .result-box strong {
+      display: block;
+      color: #08733e;
+      font-size: 25px;
+    }
+
+
+
+    /* ==========================
+       EFEITO DE EXPLOSÃO
+    ========================== */
+
+    .bomb-wrapper.exploding .bomb {
+      animation: bombExplode .7s ease-out forwards;
+    }
+
+    .bomb-wrapper.exploding .spark {
+      display: none;
+    }
+
+    .bomb-wrapper.exploding::after {
+      content: "💥";
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 135px;
+      z-index: 10;
+      animation: explosionFlash .8s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes bombExplode {
+      0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+      35% { transform: scale(1.18) rotate(-5deg); filter: brightness(2.2); }
+      60% { transform: scale(.85) rotate(6deg); opacity: .7; }
+      100% { transform: scale(0); opacity: 0; }
+    }
+
+    @keyframes explosionFlash {
+      0% { transform: scale(.15); opacity: 0; }
+      25% { transform: scale(1.25); opacity: 1; }
+      60% { transform: scale(1.55); opacity: 1; }
+      100% { transform: scale(2.1); opacity: 0; }
+    }
+
+    body.screen-shake {
+      animation: screenShake .45s linear;
+    }
+
+    @keyframes screenShake {
+      0%,100% { transform: translate(0,0); }
+      20% { transform: translate(-8px, 5px); }
+      40% { transform: translate(8px, -5px); }
+      60% { transform: translate(-6px, -3px); }
+      80% { transform: translate(6px, 3px); }
+    }
+
+
+    /* ==========================
+       ESCOLHA DE NÍVEL APÓS EXPLOSÃO
+    ========================== */
+    #timeoutLevelChoice {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.78);
+      backdrop-filter: blur(9px);
+      z-index: 40;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .timeout-choice-card {
+      width: 100%;
+      max-width: 680px;
+      background: white;
+      color: #193526;
+      border-radius: 30px;
+      padding: 38px;
+      text-align: center;
+      box-shadow: 0 30px 90px rgba(0,0,0,.48);
+      animation: choiceEnter .35s ease;
+    }
+
+    .timeout-choice-card .boom-icon {
+      font-size: 78px;
+      margin-bottom: 8px;
+    }
+
+    .timeout-choice-card h2 {
+      color: #b3221c;
+      font-size: 34px;
+      margin-bottom: 10px;
+    }
+
+    .timeout-choice-card p {
+      font-size: 18px;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    .timeout-report {
+      background: #f3faf6;
+      border: 2px solid #d8eee1;
+      border-radius: 20px;
+      padding: 18px;
+      margin: 18px 0 22px;
+      text-align: left;
+    }
+
+    .timeout-report h3 {
+      color: #08733e;
+      text-align: center;
+      margin-bottom: 14px;
+      font-size: 21px;
+    }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .report-item {
+      background: #fff;
+      border-radius: 14px;
+      padding: 12px 8px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,.06);
+    }
+
+    .report-item span {
+      display: block;
+      font-size: 12px;
+      color: #68766d;
+      margin-bottom: 5px;
+    }
+
+    .report-item strong {
+      color: #123c27;
+      font-size: 19px;
+    }
+
+    .saved-reports {
+      margin-top: 14px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #43584b;
+    }
+
+    .saved-report-line {
+      border-top: 1px solid #d8e8de;
+      padding-top: 7px;
+      margin-top: 7px;
+    }
+
+    .level-choice-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .level-choice-btn {
+      border: 0;
+      border-radius: 18px;
+      padding: 18px 12px;
+      cursor: pointer;
+      font-weight: 900;
+      font-size: 17px;
+      background: linear-gradient(135deg, #17a95d, #08733e);
+      color: white;
+      box-shadow: 0 8px 20px rgba(8,115,62,.22);
+      transition: .2s;
+    }
+
+    .level-choice-btn:hover { transform: translateY(-3px) scale(1.02); }
+
+    .repeat-level-btn {
+      width: 100%;
+      border: 2px solid #08733e;
+      background: #eef9f3;
+      color: #08733e;
+      border-radius: 18px;
+      padding: 15px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    @keyframes choiceEnter {
+      from { opacity: 0; transform: scale(.82); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @media(max-width: 600px) {
+      .level-choice-buttons { grid-template-columns: 1fr; }
+      .report-grid { grid-template-columns: repeat(2, 1fr); }
+      .timeout-choice-card { padding: 28px 20px; }
+    }
+
+    /* RESPONSIVO */
+
+    @media(max-width: 850px) {
+      .game-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .timer-panel {
+        min-height: auto;
+      }
+
+      .bomb-wrapper {
+        transform: scale(.8);
+        margin-top: 0;
+        margin-bottom: -20px;
+      }
+
+      .levels-preview {
+        grid-template-columns: 1fr;
+      }
+
+      .reading-card {
+        min-height: 520px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="game-container">
+
+  <header class="header">
+    <div>
+      <h1>📚 Desafio da Leitura</h1>
+      <p>Fluência, atenção e velocidade na leitura</p>
+            <P> Formador: Prof. Edivan Junior</P>
+<p> Desenvolvedor Prof. Nixo Auli</p>
+    </div>
+
+    <div class="score-box">
+      ⭐ Pontos: <span id="score">0</span>
+    </div>
+  </header>
+
+
+  <!-- =========================
+       TELA INICIAL
+  ========================== -->
+
+  <section id="startScreen">
+
+    <div class="start-card">
+
+      <div class="icon">📖💣</div>
+
+      <h2>Desafio da Leitura</h2>
+
+      <p>
+        Leia cada palavra em voz alta e pressione
+        <strong>“Li a palavra”</strong> para continuar.
+        Complete os três níveis enquanto o cronômetro registra
+        seu tempo.
+      </p>
+
+      <div class="levels-preview">
+
+        <div class="level-preview">
+          <strong>NÍVEL 1</strong>
+          60 palavras
+        </div>
+
+        <div class="level-preview">
+          <strong>NÍVEL 2</strong>
+          Pseudopalavras
+        </div>
+
+        <div class="level-preview">
+          <strong>NÍVEL 3</strong>
+          Leitura de texto
+        </div>
+
+      </div>
+
+      <button class="btn btn-primary" onclick="startGame()">
+        🚀 COMEÇAR DESAFIO
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================
+       JOGO
+  ========================== -->
+
+  <section id="gameScreen">
+
+    <div class="game-grid">
+
+      <main class="reading-card">
+
+        <div>
+
+          <span class="level-badge" id="levelBadge">
+            NÍVEL 1
+          </span>
+
+          <h2 id="levelTitle">
+            Leitura de Palavras
+          </h2>
+
+          <p id="instructions">
+            Leia a palavra em voz alta.
+          </p>
+
+        </div>
+
+
+        <div class="word-area">
+
+          <div id="wordDisplay">
+            MOLA
+          </div>
+
+          <div id="textDisplay"></div>
+
+        </div>
+
+
+        <div>
+
+          <div class="controls">
+
+            <button
+              id="nextButton"
+              class="btn"
+              onclick="nextItem()"
+            >
+              ✅ LI A PALAVRA
+            </button>
+
+          </div>
+
+
+          <div class="progress-container">
+
+            <div class="progress-info">
+
+              <span>
+                Progresso
+              </span>
+
+              <span id="progressText">
+                1 / 60
+              </span>
+
+            </div>
+
+            <div class="progress-bar">
+              <div id="progress"></div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </main>
+
+
+      <!-- BOMBA -->
+
+      <aside class="timer-panel">
+
+        <h3>⏱️ Cronômetro</h3>
+
+        <div class="bomb-wrapper">
+
+          <div class="fuse"></div>
+
+          <div class="spark">
+            ✨
+          </div>
+
+          <div class="bomb">
+
+            <div class="bomb-timer" id="timer">
+              00:00
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="timer-label">
+          💣 Tempo restante neste nível
+        </div>
+
+
+        <div class="stats">
+
+          <div class="stat">
+            <span>Nível atual</span>
+            <strong id="statLevel">1</strong>
+          </div>
+
+          <div class="stat">
+            <span>Itens concluídos</span>
+            <strong id="statItems">0</strong>
+          </div>
+
+          <div class="stat">
+            <span>Acertos no nível</span>
+            <strong id="statScore">0</strong>
+          </div>
+
+        </div>
+
+      </aside>
+
+    </div>
+
+  </section>
+
+</div>
+
+
+<!-- =========================
+     MODAL NÍVEL COMPLETO
+========================== -->
+
+<div id="levelComplete">
+
+  <div class="modal-card">
+
+    <div class="emoji">
+      🎉
+    </div>
+
+    <h2>
+      Nível concluído!
+    </h2>
+
+    <p id="levelMessage">
+      Excelente leitura!
+    </p>
+
+    <div class="result-grid">
+
+      <div class="result-box">
+        <span>Tempo</span>
+        <strong id="levelTime">
+          00:00
+        </strong>
+      </div>
+
+      <div class="result-box">
+        <span>Acertos</span>
+        <strong id="levelPoints">0/0</strong>
+      </div>
+
+      <div class="result-box">
+        <span>Desempenho</span>
+        <strong id="levelPercent">0%</strong>
+      </div>
+
+    </div>
+
+    <button
+      class="btn btn-primary"
+      onclick="goNextLevel()"
+    >
+      PRÓXIMO NÍVEL ➜
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- =========================
+     FIM
+========================== -->
+
+<div id="gameComplete">
+
+  <div class="modal-card">
+
+    <div class="emoji">
+      🏆
+    </div>
+
+    <h2>
+      Desafio concluído!
+    </h2>
+
+    <p>
+      Parabéns! Você completou todos os níveis
+      do Desafio da Leitura.
+    </p>
+
+    <div class="timeout-report">
+      <h3>📊 Relatório final por nível</h3>
+      <div id="finalLevelReports" class="saved-reports"></div>
+    </div>
+
+    <button
+      class="btn btn-primary"
+      onclick="restartGame()"
+    >
+      🔄 JOGAR NOVAMENTE
+    </button>
+
+  </div>
+
+</div>
+
+
+
+<!-- =========================
+     ESCOLHA DE NÍVEL APÓS O TEMPO
+========================= -->
+<div id="timeoutLevelChoice">
+  <div class="timeout-choice-card">
+    <div class="boom-icon">💥</div>
+    <h2>Tempo esgotado!</h2>
+    <p>A bomba explodiu. Confira o relatório deste nível antes de escolher para onde deseja seguir.</p>
+
+    <div class="timeout-report">
+      <h3 id="timeoutReportTitle">📊 Relatório do Nível</h3>
+      <div class="report-grid">
+        <div class="report-item"><span>Acertos</span><strong id="reportHits">0</strong></div>
+        <div class="report-item"><span>Total</span><strong id="reportTotal">0</strong></div>
+        <div class="report-item"><span>Desempenho</span><strong id="reportPercent">0%</strong></div>
+        <div class="report-item"><span>Tempo</span><strong id="reportTime">01:00</strong></div>
+      </div>
+      <div class="saved-reports" id="savedReports"></div>
+    </div>
+
+    <p><strong>Escolha o próximo nível:</strong></p>
+    <div class="level-choice-buttons">
+      <button class="level-choice-btn" onclick="chooseLevelAfterTimeout(1)">📗 NÍVEL 1</button>
+      <button class="level-choice-btn" onclick="chooseLevelAfterTimeout(2)">🧩 NÍVEL 2</button>
+      <button class="level-choice-btn" onclick="chooseLevelAfterTimeout(3)">📖 NÍVEL 3</button>
+    </div>
+
+    <button class="repeat-level-btn" onclick="repeatCurrentLevelAfterTimeout()">🔄 REPETIR O NÍVEL ATUAL</button>
+  </div>
+</div>
+
+<script>
+
+/* ============================================================
+   DADOS DO JOGO
+============================================================ */
+
+const nivel1 = [
+"MOLA","GIRAFA","CAMA","PENA","MENINO","POMADA","SETE","BONECA",
+"JOGO","CASACO","DADO","RETA","CEBOLA","CASA","DELEGADO","MURO",
+"LAGO","VOLUME","FOGO","CABELO","LÃ","FAVORITO","VERDE","MASSA",
+"TURISTA","ALGODÃO","CONVIDADO","NETO","COLA","ESPORTIVO","PILOTO",
+"MONTANHA","GRÃO","CINTURA","CREME","FAXINA","NÓ","MULHER","CASULO",
+"XERIFE","FORNO","QUALIDADE","PULO","REGRA","TESOURO","SOM","RODELA",
+"MODELO","RODA","DOZE","SALAME","PÁ","TOPETE","GEMADA","ÁGUA","CHÃO",
+"NAPOLITANO","COMPLETO","RARO","SECRETA"
+];
+
+
+const nivel2 = [
+"NIRA","FEPINO","VONA","LIBITE","GETO","VORENO","MEPA","CONOTE",
+"FARA","MEFIFO","ZALO","RETOPADA","FI","BAGISO","DOZE","CEZ",
+"DELAFITU","TASEFA","SEGO","FITU","NODELO","APETENCE","FO","PEDALEICO",
+"TAE","CACODACIO","TAMIFA","NANES","JATAETE","RAPASO","DELAFITU","TASEFA",
+"SEGO","FITU","NODELO","APETENCE","FO","PEDALEICO","TAE","CACODACIO",
+"DOLUTO","NANES","JATAETE","RAPASO","POMEGADA","POMEGADA", "TARCELA", "RAX", "GAJACE", 
+"DEGA", "LEFE", "MORTABO", "VUFO", "DOLUTOO", "DONU"
+];
+
+
+const textoNivel3 = `
+O CACHORRO PIPOCA FOI VISITAR A FAZENDA DA VOVÓ JUNTO COM SEU DONO,
+BINHO, E LEVOU SEU OSSINHO FAVORITO COM ELE.
+
+ELE ESTAVA BEM FELIZ ROENDO SEU OSSO... QUANDO UM GATO APARECEU.
+
+O PIPOCA FOI ATRÁS DO GATO E, QUANDO VOLTOU, O OSSO SUMIU.
+
+O CÃO PROCUROU O OSSO EM TODOS OS LUGARES, MAS NADA DE ENCONTRAR
+O SEU OSSINHO.
+
+ANDAVA TRISTE PELA FAZENDA, COM O RABINHO ENTRE AS PERNAS E CHORANDO.
+
+OLHOU PARA O GALPÃO, QUANDO, DE REPENTE, UM MILAGRE ACONTECEU:
+SEU OSSO ESTAVA LÁ DENTRO!
+
+AO CHEGAR LÁ, AS LUZES DO GALPÃO ACENDERAM DO NADA,
+E TODOS OS ANIMAIS DA FAZENDA GRITARAM: SURPRESA!!
+
+TUDO NÃO PASSAVA DE UM PLANO DOS ANIMAIS DA FAZENDA PARA FAZER
+UMA FESTA SURPRESA PARA O PIPOCA, QUE ESTAVA DE ANIVERSÁRIO.
+
+ASSIM, OS ANIMAIS CONFRATERNIZARAM E BRINCARAM O DIA TODO NA FESTA!
+`;
+
+
+const paragrafosNivel3 = textoNivel3
+  .trim()
+  .split(/\n\s*\n/)
+  .map(paragrafo => paragrafo.replace(/\n/g, " ").trim())
+  .filter(Boolean);
+
+let level3VisibleParagraphs = 0;
+
+
+/* ============================================================
+   VARIÁVEIS
+============================================================ */
+
+let currentLevel = 1;
+
+let currentIndex = 0;
+
+let score = 0; // pontuação somente do nível atual
+
+let totalItems = 0; // acertos somente do nível atual
+
+let levelReports = {
+  1: null,
+  2: null,
+  3: null
+};
+
+const LEVEL_TIME = 60; // tempo de cada nível em segundos
+
+let timeLeft = LEVEL_TIME;
+
+let totalElapsedSeconds = 0;
+
+let timerInterval;
+
+let isExploding = false;
+
+
+/* ============================================================
+   INICIAR JOGO
+============================================================ */
+
+function startGame() {
+
+  document.getElementById("startScreen").style.display = "none";
+
+  document.getElementById("gameScreen").style.display = "block";
+
+  currentLevel = 1;
+
+  currentIndex = 0;
+
+  score = 0;
+
+  totalItems = 0;
+
+  levelReports = { 1: null, 2: null, 3: null };
+
+  timeLeft = LEVEL_TIME;
+
+  totalElapsedSeconds = 0;
+
+  updateScore();
+
+  loadLevel();
+
+  startLevelTimer();
+}
+
+
+/* ============================================================
+   CRONÔMETRO
+============================================================ */
+
+function updateTimer() {
+
+  const minutes = Math.floor(timeLeft / 60);
+
+  const secs = timeLeft % 60;
+
+  document.getElementById("timer").innerText =
+    String(minutes).padStart(2,"0") +
+    ":" +
+    String(secs).padStart(2,"0");
+}
+
+
+function startLevelTimer() {
+
+  clearInterval(timerInterval);
+
+  timeLeft = LEVEL_TIME;
+
+  updateTimer();
+
+  timerInterval = setInterval(() => {
+
+    timeLeft--;
+    totalElapsedSeconds++;
+
+    updateTimer();
+
+    if(timeLeft <= 0) {
+      clearInterval(timerInterval);
+      timeLeft = 0;
+      updateTimer();
+      handleTimeOut();
+    }
+
+  }, 1000);
+}
+
+
+function handleTimeOut() {
+
+  if (isExploding) return;
+  isExploding = true;
+
+  const bombWrapper = document.querySelector(".bomb-wrapper");
+  const nextButton = document.getElementById("nextButton");
+
+  // Bloqueia apenas durante a animação da explosão.
+  nextButton.disabled = true;
+  bombWrapper.classList.add("exploding");
+  document.body.classList.add("screen-shake");
+
+  playExplosionSound();
+
+  setTimeout(() => {
+    bombWrapper.classList.remove("exploding");
+    document.body.classList.remove("screen-shake");
+    nextButton.disabled = false;
+    isExploding = false;
+
+    // Registra e exibe o relatório apenas deste nível.
+    saveCurrentLevelReport();
+    showTimeoutReport();
+
+    // Depois da explosão, libera a escolha de nível dentro do próprio jogo.
+    document.getElementById("timeoutLevelChoice").style.display = "flex";
+  }, 900);
+}
+
+
+
+function getLevelTotal(level) {
+  if (level === 1) return nivel1.length;
+  if (level === 2) return nivel2.length;
+  return paragrafosNivel3.length;
+}
+
+function saveCurrentLevelReport() {
+  const total = getLevelTotal(currentLevel);
+  const hits = Math.min(totalItems, total);
+  const percent = total > 0 ? Math.round((hits / total) * 100) : 0;
+
+  levelReports[currentLevel] = {
+    level: currentLevel,
+    hits,
+    total,
+    percent,
+    time: LEVEL_TIME
+  };
+}
+
+function showTimeoutReport() {
+  const report = levelReports[currentLevel];
+  if (!report) return;
+
+  document.getElementById("timeoutReportTitle").innerText =
+    `📊 Relatório do Nível ${report.level}`;
+  document.getElementById("reportHits").innerText = report.hits;
+  document.getElementById("reportTotal").innerText = report.total;
+  document.getElementById("reportPercent").innerText = report.percent + "%";
+  document.getElementById("reportTime").innerText = formatTime(report.time);
+
+  const saved = Object.values(levelReports).filter(Boolean);
+  document.getElementById("savedReports").innerHTML = saved.length
+    ? "<strong>Resultados registrados:</strong>" + saved.map(r =>
+        `<div class="saved-report-line">Nível ${r.level}: <strong>${r.hits}/${r.total}</strong> acertos (${r.percent}%)</div>`
+      ).join("")
+    : "";
+}
+
+function resetCurrentLevelCounters() {
+  currentIndex = 0;
+  score = 0;
+  totalItems = 0;
+  updateScore();
+}
+
+function chooseLevelAfterTimeout(level) {
+  if (![1, 2, 3].includes(level)) return;
+
+  document.getElementById("timeoutLevelChoice").style.display = "none";
+  currentLevel = level;
+  resetCurrentLevelCounters();
+  loadLevel();
+  startLevelTimer();
+}
+
+function repeatCurrentLevelAfterTimeout() {
+  document.getElementById("timeoutLevelChoice").style.display = "none";
+  resetCurrentLevelCounters();
+  loadLevel();
+  startLevelTimer();
+}
+
+function playExplosionSound() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContext();
+    const duration = 1.1;
+    const bufferSize = Math.floor(audioCtx.sampleRate * duration);
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+
+    for (let i = 0; i < bufferSize; i++) {
+      const t = i / audioCtx.sampleRate;
+      const envelope = Math.pow(1 - t / duration, 3);
+      data[i] = (Math.random() * 2 - 1) * envelope;
+    }
+
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(1200, audioCtx.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + duration);
+
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+
+    const boom = audioCtx.createOscillator();
+    const boomGain = audioCtx.createGain();
+    boom.type = "sine";
+    boom.frequency.setValueAtTime(95, audioCtx.currentTime);
+    boom.frequency.exponentialRampToValueAtTime(35, audioCtx.currentTime + .55);
+    boomGain.gain.setValueAtTime(.8, audioCtx.currentTime);
+    boomGain.gain.exponentialRampToValueAtTime(.01, audioCtx.currentTime + .6);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    boom.connect(boomGain);
+    boomGain.connect(audioCtx.destination);
+
+    noise.start();
+    boom.start();
+    boom.stop(audioCtx.currentTime + .6);
+  } catch (error) {
+    console.warn("Não foi possível reproduzir o som da explosão:", error);
+  }
+}
+
+
+function formatTime(value) {
+
+  const minutes = Math.floor(value / 60);
+
+  const secs = value % 60;
+
+  return (
+    String(minutes).padStart(2,"0") +
+    ":" +
+    String(secs).padStart(2,"0")
+  );
+}
+
+
+/* ============================================================
+   CARREGAR NÍVEL
+============================================================ */
+
+function loadLevel() {
+
+  currentIndex = 0;
+
+  const word = document.getElementById("wordDisplay");
+
+  const text = document.getElementById("textDisplay");
+
+  const button = document.getElementById("nextButton");
+
+
+  if(currentLevel === 1) {
+
+    document.getElementById("levelBadge").innerText = "NÍVEL 1";
+
+    document.getElementById("levelTitle").innerText =
+      "Leitura de Palavras";
+
+    document.getElementById("instructions").innerText =
+      "Leia cada palavra em voz alta e avance.";
+
+    word.style.display = "block";
+
+    text.style.display = "none";
+
+    button.innerText = "✅ LI A PALAVRA";
+
+    showWord();
+
+  }
+
+
+  else if(currentLevel === 2) {
+
+    document.getElementById("levelBadge").innerText = "NÍVEL 2";
+
+    document.getElementById("levelTitle").innerText =
+      "Desafio das Pseudopalavras";
+
+    document.getElementById("instructions").innerText =
+      "Leia exatamente como está escrito, mesmo que a palavra não exista.";
+
+    word.style.display = "block";
+
+    text.style.display = "none";
+
+    button.innerText = "✅ LI A PALAVRA";
+
+    showWord();
+
+  }
+
+
+  else {
+
+    document.getElementById("levelBadge").innerText = "NÍVEL 3";
+
+    document.getElementById("levelTitle").innerText =
+      "Leitura de Texto por Parágrafos";
+
+    document.getElementById("instructions").innerText =
+      "Leia o parágrafo destacado em verde. O professor deve clicar no botão para liberar o próximo parágrafo.";
+
+    word.style.display = "none";
+
+    text.style.display = "block";
+
+    text.innerHTML = "";
+    level3VisibleParagraphs = 0;
+    renderLevel3Paragraphs(1);
+
+    button.innerText = paragrafosNivel3.length > 1
+      ? "➡️ PRÓXIMO PARÁGRAFO"
+      : "🏁 FINALIZAR LEITURA";
+
+    document.getElementById("progressText").innerText =
+      `Parágrafo 1 / ${paragrafosNivel3.length}`;
+
+    document.getElementById("progress").style.width =
+      (100 / paragrafosNivel3.length) + "%";
+  }
+
+
+  document.getElementById("statLevel").innerText = currentLevel;
+
+}
+
+
+/* ============================================================
+   NÍVEL 3 - PARÁGRAFOS CONTROLADOS PELO PROFESSOR
+============================================================ */
+
+function renderLevel3Paragraphs(count) {
+  const text = document.getElementById("textDisplay");
+  const button = document.getElementById("nextButton");
+  const visibleCount = Math.max(1, Math.min(count, paragrafosNivel3.length));
+
+  if (visibleCount === level3VisibleParagraphs) return;
+
+  level3VisibleParagraphs = visibleCount;
+
+  text.innerHTML = paragrafosNivel3
+    .slice(0, visibleCount)
+    .map((paragrafo, index) => {
+      const isActive = index === visibleCount - 1;
+      const classe = isActive ? "active" : "read";
+      return `<p class="level3-paragraph ${classe}">${paragrafo}</p>`;
+    })
+    .join("");
+
+  const active = text.querySelector(".level3-paragraph.active");
+  if (active) {
+    active.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  document.getElementById("progressText").innerText =
+    `Parágrafo ${visibleCount} / ${paragrafosNivel3.length}`;
+
+  document.getElementById("progress").style.width =
+    ((visibleCount / paragrafosNivel3.length) * 100) + "%";
+
+  button.innerText = visibleCount >= paragrafosNivel3.length
+    ? "🏁 FINALIZAR LEITURA"
+    : "➡️ PRÓXIMO PARÁGRAFO";
+}
+
+/* ============================================================
+   MOSTRAR PALAVRA
+============================================================ */
+
+function showWord() {
+
+  let words =
+    currentLevel === 1
+    ? nivel1
+    : nivel2;
+
+
+  const word = document.getElementById("wordDisplay");
+
+  word.style.animation = "none";
+
+  void word.offsetWidth;
+
+  word.style.animation = "wordEnter .35s ease";
+
+  word.innerText = words[currentIndex];
+
+
+  const total = words.length;
+
+  document.getElementById("progressText").innerText =
+    (currentIndex + 1) + " / " + total;
+
+
+  const percentage =
+    ((currentIndex + 1) / total) * 100;
+
+
+  document.getElementById("progress").style.width =
+    percentage + "%";
+}
+
+
+/* ============================================================
+   PRÓXIMO ITEM
+============================================================ */
+
+function nextItem() {
+
+  if (isExploding) return;
+
+  if(currentLevel === 3) {
+
+    // Cada clique do professor confirma a leitura do parágrafo atual.
+    score += 1;
+    totalItems++;
+    updateScore();
+
+    if (level3VisibleParagraphs < paragrafosNivel3.length) {
+      renderLevel3Paragraphs(level3VisibleParagraphs + 1);
+    } else {
+      finishLevel();
+    }
+
+    return;
+  }
+
+
+  let words =
+    currentLevel === 1
+    ? nivel1
+    : nivel2;
+
+
+  score += 1;
+
+  totalItems++;
+
+  updateScore();
+
+
+  currentIndex++;
+
+
+  if(currentIndex >= words.length) {
+
+    finishLevel();
+
+  }
+
+  else {
+
+    showWord();
+
+  }
+
+}
+
+
+/* ============================================================
+   ATUALIZAR PONTOS
+============================================================ */
+
+function updateScore() {
+
+  document.getElementById("score").innerText =
+    score;
+
+  document.getElementById("statScore").innerText =
+    score;
+
+  document.getElementById("statItems").innerText =
+    totalItems;
+}
+
+
+/* ============================================================
+   FINALIZAR NÍVEL
+============================================================ */
+
+function finishLevel() {
+
+  clearInterval(timerInterval);
+
+  const levelTime = LEVEL_TIME - timeLeft;
+
+  // Guarda o resultado do nível sem somar com os demais.
+  const total = getLevelTotal(currentLevel);
+  const hits = Math.min(totalItems, total);
+  levelReports[currentLevel] = {
+    level: currentLevel,
+    hits,
+    total,
+    percent: total > 0 ? Math.round((hits / total) * 100) : 0,
+    time: levelTime
+  };
+
+  if(currentLevel === 3) {
+
+    finishGame();
+
+    return;
+  }
+
+
+  document.getElementById("levelTime").innerText =
+    formatTime(levelTime);
+
+
+  document.getElementById("levelPoints").innerText =
+    hits + "/" + total;
+
+  document.getElementById("levelPercent").innerText =
+    levelReports[currentLevel].percent + "%";
+
+
+  if(currentLevel === 1) {
+
+    document.getElementById("levelMessage").innerText =
+      "Muito bem! Você concluiu as 60 palavras. Agora vamos aumentar o desafio.";
+
+  }
+
+  else {
+
+    document.getElementById("levelMessage").innerText =
+      "Excelente! Você venceu as pseudopalavras. Agora chegou a hora da leitura do texto.";
+
+  }
+
+
+  document.getElementById("levelComplete").style.display =
+    "flex";
+}
+
+
+/* ============================================================
+   PRÓXIMO NÍVEL
+============================================================ */
+
+function goNextLevel() {
+
+  document.getElementById("levelComplete").style.display =
+    "none";
+
+  currentLevel++;
+
+  resetCurrentLevelCounters();
+
+  loadLevel();
+
+  startLevelTimer();
+
+}
+
+
+/* ============================================================
+   FINAL
+============================================================ */
+
+function finishGame() {
+
+  clearInterval(timerInterval);
+
+
+  const reports = Object.values(levelReports).filter(Boolean);
+  document.getElementById("finalLevelReports").innerHTML = reports.length
+    ? reports.map(r =>
+        `<div class="saved-report-line">Nível ${r.level}: <strong>${r.hits}/${r.total}</strong> acertos | ${r.percent}% | ${formatTime(r.time)}</div>`
+      ).join("")
+    : "Nenhum relatório registrado.";
+
+  document.getElementById("gameComplete").style.display =
+    "flex";
+}
+
+
+/* ============================================================
+   REINICIAR
+============================================================ */
+
+function restartGame() {
+
+  clearInterval(timerInterval);
+
+  levelReports = { 1: null, 2: null, 3: null };
+  score = 0;
+  totalItems = 0;
+  currentIndex = 0;
+
+  document.getElementById("gameComplete").style.display =
+    "none";
+
+  document.getElementById("timeoutLevelChoice").style.display =
+    "none";
+
+  document.getElementById("gameScreen").style.display =
+    "none";
+
+  document.getElementById("startScreen").style.display =
+    "flex";
+}
+
+</script>
+
+</body>
+</html>
