@@ -1,1824 +1,4041 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Desafio Fluência Leitora-DGP</title>
-
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-
-    body {
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at top, #1f9d55 0%, #0b6b3a 35%, #063b23 100%);
-      color: white;
-      overflow-x: hidden;
-      transition: background .65s ease;
-    }
-
-    /* O sistema utiliza a identidade visual verde em todos os níveis. */
-
-    .game-container {
-      width: 95%;
-      max-width: 1300px;
-      margin: auto;
-      min-height: 100vh;
-      padding: 20px;
-    }
-
-    /* ==========================
-       CABEÇALHO
-    ========================== */
-
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 20px;
-      flex-wrap: wrap;
-
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.20);
-      backdrop-filter: blur(10px);
-
-      padding: 18px 25px;
-      border-radius: 22px;
-      margin-bottom: 20px;
-    }
-
-    .header h1 {
-      font-size: 28px;
-      color: #fff;
-    }
-
-    .header p {
-      margin-top: 5px;
-      opacity: .8;
-    }
-
-    .score-box {
-      background: #ffffff;
-      color: #13653c;
-      padding: 12px 22px;
-      border-radius: 15px;
-      font-weight: bold;
-      font-size: 18px;
-      box-shadow: 0 8px 25px rgba(0,0,0,.18);
-    }
-
-    /* ==========================
-       TELA INICIAL
-    ========================== */
-
-    #startScreen {
-      min-height: 75vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .start-card {
-      width: 100%;
-      max-width: 750px;
-
-      background: rgba(255,255,255,.97);
-      color: #163828;
-
-      padding: 45px;
-      border-radius: 30px;
-      text-align: center;
-
-      box-shadow: 0 25px 80px rgba(0,0,0,.30);
-    }
-
-    .start-card .icon {
-      font-size: 80px;
-      margin-bottom: 15px;
-    }
-
-    .start-card h2 {
-      font-size: 42px;
-      color: #08783f;
-      margin-bottom: 15px;
-    }
-
-    .start-card p {
-      font-size: 19px;
-      line-height: 1.6;
-      margin-bottom: 25px;
-    }
-
-    .levels-preview {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin: 25px 0;
-    }
-
-    .level-preview {
-      background: #edf9f2;
-      padding: 20px 10px;
-      border-radius: 18px;
-      border: 2px solid #d4f0df;
-    }
-
-    .level-preview strong {
-      display: block;
-      color: #08783f;
-      margin-bottom: 7px;
-      font-size: 18px;
-    }
-
-    .btn {
-      border: none;
-      cursor: pointer;
-      border-radius: 16px;
-
-      padding: 16px 28px;
-      font-size: 18px;
-      font-weight: bold;
-
-      transition: .25s;
-    }
-
-    .btn:hover {
-      transform: translateY(-3px);
-    }
-
-    .btn-primary {
-      color: white;
-      background: linear-gradient(135deg, #10a759, #08733e);
-      box-shadow: 0 10px 25px rgba(16,167,89,.3);
-    }
-
-    .btn-next {
-      color: #0c6337;
-      background: #fff;
-      min-width: 200px;
-    }
-
-    .btn-next:hover {
-      background: #e9fff2;
-    }
-
-    /* ==========================
-       ÁREA DO JOGO
-    ========================== */
-
-    #gameScreen {
-      display: none;
-    }
-
-    .game-grid {
-      display: grid;
-      grid-template-columns: 1fr 300px;
-      gap: 20px;
-    }
-
-    .reading-card {
-      background: rgba(255,255,255,.97);
-      color: #1b3328;
-
-      border-radius: 30px;
-      padding: 35px;
-
-      min-height: 620px;
-
-      box-shadow: 0 25px 60px rgba(0,0,0,.25);
-
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .level-badge {
-      display: inline-block;
-      background: #dff7e8;
-      color: #08733e;
-
-      border-radius: 100px;
-      padding: 9px 18px;
-
-      font-weight: bold;
-      font-size: 16px;
-
-      margin-bottom: 15px;
-    }
-
-    #levelTitle {
-      font-size: 30px;
-      color: #0b7040;
-      margin-bottom: 10px;
-    }
-
-    #instructions {
-      font-size: 17px;
-      color: #657268;
-    }
-
-    /* PALAVRA */
-
-    .word-area {
-      flex: 1;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      padding: 40px 10px;
-      text-align: center;
-    }
-
-    #wordDisplay {
-      font-size: clamp(45px, 8vw, 90px);
-      font-weight: 900;
-      color: #163b28;
-
-      letter-spacing: 3px;
-
-      animation: wordEnter .35s ease;
-    }
-
-    @keyframes wordEnter {
-      from {
-        opacity: 0;
-        transform: scale(.7);
-      }
-
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    /* TEXTO */
-
-    #textDisplay {
-      display: none;
-
-      font-size: 25px;
-      line-height: 1.65;
-      text-align: left;
-
-      color: #1e382b;
-
-      background: #f1faf5;
-      border-radius: 20px;
-      padding: 25px;
-
-      max-height: 400px;
-      overflow-y: auto;
-    }
-
-    .level3-paragraph {
-      margin: 0 0 18px;
-      padding: 15px 17px;
-      border-radius: 14px;
-      background: rgba(255,255,255,.75);
-      color: #32463a;
-      opacity: .82;
-      transform: translateY(8px);
-      animation: paragraphEnter .45s ease forwards;
-      transition: background .35s ease, color .35s ease, box-shadow .35s ease, transform .35s ease;
-    }
-
-    .level3-paragraph.active {
-      background: #dff7e8;
-      color: #08733e;
-      font-weight: 800;
-      box-shadow: 0 0 0 3px rgba(16,167,89,.20), 0 10px 24px rgba(8,115,62,.14);
-      transform: scale(1.015);
-      opacity: 1;
-    }
-
-    .level3-paragraph.read {
-      opacity: .72;
-      background: #f3f7f5;
-      color: #53645b;
-    }
-
-    @keyframes paragraphEnter {
-      from { opacity: 0; transform: translateY(14px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .controls {
-      text-align: center;
-    }
-
-    .controls .btn {
-      background: linear-gradient(135deg, #14a85b, #08733e);
-      color: white;
-    }
-
-    /* ==========================
-       PROGRESSO
-    ========================== */
-
-    .progress-container {
-      margin-top: 20px;
-    }
-
-    .progress-info {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-      font-weight: bold;
-      color: #51675a;
-    }
-
-    .progress-bar {
-      height: 14px;
-      border-radius: 100px;
-      background: #d8e7de;
-      overflow: hidden;
-    }
-
-    #progress {
-      height: 100%;
-      width: 0;
-      background: linear-gradient(90deg, #16b560, #72d698);
-      border-radius: inherit;
-      transition: width .3s;
-    }
-
-    /* ==========================
-       BOMBA
-    ========================== */
-
-    .timer-panel {
-      background: rgba(255,255,255,.12);
-
-      border-radius: 30px;
-      padding: 25px 18px;
-
-      border: 1px solid rgba(255,255,255,.20);
-
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-
-      min-height: 620px;
-    }
-
-    .timer-panel h3 {
-      font-size: 22px;
-      margin-bottom: 15px;
-    }
-
-    .bomb-wrapper {
-      position: relative;
-
-      width: 190px;
-      height: 250px;
-
-      margin-top: 25px;
-    }
-
-    .fuse {
-      position: absolute;
-
-      width: 75px;
-      height: 55px;
-
-      border-top: 8px solid #d6b16e;
-      border-radius: 50%;
-
-      top: 5px;
-      left: 105px;
-
-      transform: rotate(25deg);
-    }
-
-    .spark {
-      position: absolute;
-
-      top: -5px;
-      right: 5px;
-
-      font-size: 37px;
-
-      animation: spark .25s infinite alternate;
-    }
-
-    @keyframes spark {
-      from {
-        transform: scale(.85) rotate(-10deg);
-      }
-
-      to {
-        transform: scale(1.25) rotate(10deg);
-      }
-    }
-
-    .bomb {
-      position: absolute;
-
-      width: 170px;
-      height: 170px;
-
-      bottom: 10px;
-      left: 5px;
-
-      border-radius: 50%;
-
-      background:
-        radial-gradient(circle at 35% 30%, #555, #151515 60%, #000);
-
-      box-shadow:
-        inset -15px -20px 30px rgba(0,0,0,.7),
-        0 20px 30px rgba(0,0,0,.4);
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      animation: bombPulse 1s infinite alternate;
-    }
-
-    @keyframes bombPulse {
-      from {
-        transform: scale(1);
-      }
-
-      to {
-        transform: scale(1.04);
-      }
-    }
-
-    .bomb-timer {
-      background: #111;
-
-      border: 4px solid #404040;
-      border-radius: 12px;
-
-      color: #ff3b30;
-
-      padding: 10px 15px;
-
-      font-family: "Courier New", monospace;
-      font-size: 31px;
-      font-weight: bold;
-
-      text-shadow: 0 0 10px red;
-    }
-
-    .timer-label {
-      margin-top: 12px;
-      font-size: 15px;
-      opacity: .75;
-    }
-
-    .stats {
-      width: 100%;
-      margin-top: 30px;
-    }
-
-    .stat {
-      background: rgba(255,255,255,.13);
-      padding: 14px;
-
-      margin-bottom: 10px;
-
-      border-radius: 14px;
-    }
-
-    .stat span {
-      display: block;
-      font-size: 13px;
-      opacity: .75;
-    }
-
-    .stat strong {
-      font-size: 23px;
-    }
-
-    /* ==========================
-       TELA DE NIVEL
-    ========================== */
-
-    #levelComplete,
-    #gameComplete {
-      display: none;
-
-      position: fixed;
-      inset: 0;
-
-      background: rgba(0,0,0,.72);
-      backdrop-filter: blur(8px);
-
-      z-index: 20;
-
-      align-items: center;
-      justify-content: center;
-
-      padding: 20px;
-    }
-
-    .modal-card {
-      background: white;
-      color: #193526;
-
-      width: 100%;
-      max-width: 600px;
-
-      padding: 45px;
-
-      border-radius: 30px;
-
-      text-align: center;
-
-      box-shadow: 0 30px 80px rgba(0,0,0,.4);
-    }
-
-    .modal-card .emoji {
-      font-size: 75px;
-    }
-
-    .modal-card h2 {
-      font-size: 36px;
-      color: #08733e;
-
-      margin: 15px 0;
-    }
-
-    .modal-card p {
-      font-size: 18px;
-      margin-bottom: 20px;
-    }
-
-    .result-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-
-      gap: 12px;
-
-      margin: 25px 0;
-    }
-
-    .result-box {
-      padding: 18px;
-      border-radius: 18px;
-
-      background: #eef9f3;
-    }
-
-    .result-box strong {
-      display: block;
-      color: #08733e;
-      font-size: 25px;
-    }
-
-
-
-    /* ==========================
-       EFEITO DE EXPLOSÃO
-    ========================== */
-
-    .bomb-wrapper.exploding .bomb {
-      animation: bombExplode .7s ease-out forwards;
-    }
-
-    .bomb-wrapper.exploding .spark {
-      display: none;
-    }
-
-    .bomb-wrapper.exploding::after {
-      content: "💥";
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 135px;
-      z-index: 10;
-      animation: explosionFlash .8s ease-out forwards;
-      pointer-events: none;
-    }
-
-    @keyframes bombExplode {
-      0% { transform: scale(1); opacity: 1; filter: brightness(1); }
-      35% { transform: scale(1.18) rotate(-5deg); filter: brightness(2.2); }
-      60% { transform: scale(.85) rotate(6deg); opacity: .7; }
-      100% { transform: scale(0); opacity: 0; }
-    }
-
-    @keyframes explosionFlash {
-      0% { transform: scale(.15); opacity: 0; }
-      25% { transform: scale(1.25); opacity: 1; }
-      60% { transform: scale(1.55); opacity: 1; }
-      100% { transform: scale(2.1); opacity: 0; }
-    }
-
-    body.screen-shake {
-      animation: screenShake .45s linear;
-    }
-
-    @keyframes screenShake {
-      0%,100% { transform: translate(0,0); }
-      20% { transform: translate(-8px, 5px); }
-      40% { transform: translate(8px, -5px); }
-      60% { transform: translate(-6px, -3px); }
-      80% { transform: translate(6px, 3px); }
-    }
-
-
-    /* ==========================
-       ESCOLHA DE NÍVEL APÓS EXPLOSÃO
-    ========================== */
-    #timeoutLevelChoice {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.78);
-      backdrop-filter: blur(9px);
-      z-index: 40;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .timeout-choice-card {
-      width: 100%;
-      max-width: 680px;
-      background: white;
-      color: #193526;
-      border-radius: 30px;
-      padding: 38px;
-      text-align: center;
-      box-shadow: 0 30px 90px rgba(0,0,0,.48);
-      animation: choiceEnter .35s ease;
-    }
-
-    .timeout-choice-card .boom-icon {
-      font-size: 78px;
-      margin-bottom: 8px;
-    }
-
-    .timeout-choice-card h2 {
-      color: #b3221c;
-      font-size: 34px;
-      margin-bottom: 10px;
-    }
-
-    .timeout-choice-card p {
-      font-size: 18px;
-      line-height: 1.5;
-      margin-bottom: 24px;
-    }
-
-    .timeout-report {
-      background: #f3faf6;
-      border: 2px solid #d8eee1;
-      border-radius: 20px;
-      padding: 18px;
-      margin: 18px 0 22px;
-      text-align: left;
-    }
-
-    .timeout-report h3 {
-      color: #08733e;
-      text-align: center;
-      margin-bottom: 14px;
-      font-size: 21px;
-    }
-
-    .report-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-    }
-
-    .report-item {
-      background: #fff;
-      border-radius: 14px;
-      padding: 12px 8px;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,.06);
-    }
-
-    .report-item span {
-      display: block;
-      font-size: 12px;
-      color: #68766d;
-      margin-bottom: 5px;
-    }
-
-    .report-item strong {
-      color: #123c27;
-      font-size: 19px;
-    }
-
-    .saved-reports {
-      margin-top: 14px;
-      font-size: 14px;
-      line-height: 1.6;
-      color: #43584b;
-    }
-
-    .saved-report-line {
-      border-top: 1px solid #d8e8de;
-      padding-top: 7px;
-      margin-top: 7px;
-    }
-
-    .level-choice-buttons {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin: 18px 0;
-    }
-
-    .level-choice-btn {
-      border: 0;
-      border-radius: 18px;
-      padding: 18px 12px;
-      cursor: pointer;
-      font-weight: 900;
-      font-size: 17px;
-      background: linear-gradient(135deg, #17a95d, #08733e);
-      color: white;
-      box-shadow: 0 8px 20px rgba(8,115,62,.22);
-      transition: .2s;
-    }
-
-    .level-choice-btn:hover { transform: translateY(-3px) scale(1.02); }
-
-    .repeat-level-btn {
-      width: 100%;
-      border: 2px solid #08733e;
-      background: #eef9f3;
-      color: #08733e;
-      border-radius: 18px;
-      padding: 15px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: 800;
-    }
-
-    @keyframes choiceEnter {
-      from { opacity: 0; transform: scale(.82); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    @media(max-width: 600px) {
-      .level-choice-buttons { grid-template-columns: 1fr; }
-      .report-grid { grid-template-columns: repeat(2, 1fr); }
-      .timeout-choice-card { padding: 28px 20px; }
-    }
-
-    /* RESPONSIVO */
-
-    @media(max-width: 850px) {
-      .game-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .timer-panel {
-        min-height: auto;
-      }
-
-      .bomb-wrapper {
-        transform: scale(.8);
-        margin-top: 0;
-        margin-bottom: -20px;
-      }
-
-      .levels-preview {
-        grid-template-columns: 1fr;
-      }
-
-      .reading-card {
-        min-height: 520px;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Soletrando Escolar - Campeonato</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:
+    radial-gradient(circle at top,#227647 0%,#0b351f 55%,#05170e 100%);
+    color:white;
+    padding:20px;
+}
+
+.container{
+    max-width:1250px;
+    margin:auto;
+}
+
+/* ================================
+CABEÇALHO
+================================ */
+
+header{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+header h1{
+    color:#ffe160;
+    font-size:46px;
+    letter-spacing:3px;
+    text-transform:uppercase;
+}
+
+header p{
+    margin-top:8px;
+    color:#d9f4e1;
+    font-size:18px;
+}
+
+/* ================================
+CADASTRO
+================================ */
+
+.cadastro{
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:22px;
+    padding:25px;
+    margin-bottom:22px;
+}
+
+.cadastro h2{
+    text-align:center;
+    color:#ffe160;
+    margin-bottom:20px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr;
+    gap:12px;
+}
+
+.form-group label{
+    display:block;
+    margin-bottom:6px;
+    color:#caead4;
+    font-size:13px;
+}
+
+input{
+    width:100%;
+    padding:13px;
+    border:none;
+    outline:none;
+    border-radius:10px;
+    font-size:15px;
+}
+
+.aluno-atual{
+    display:none;
+    background:rgba(60,255,149,.10);
+    border:1px solid rgba(60,255,149,.3);
+    padding:15px 18px;
+    border-radius:15px;
+    margin-bottom:20px;
+}
+
+.aluno-atual strong{
+    color:#ffe160;
+}
+
+/* ================================
+NÍVEIS
+================================ */
+
+.selecao-niveis{
+    background:rgba(255,255,255,.07);
+    border-radius:20px;
+    padding:22px;
+    margin-bottom:20px;
+}
+
+.selecao-niveis h2{
+    text-align:center;
+    color:#ffe160;
+    margin-bottom:18px;
+}
+
+.niveis{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+}
+
+.nivel-card{
+    padding:20px;
+    text-align:center;
+    border-radius:18px;
+    background:rgba(255,255,255,.08);
+    border:2px solid transparent;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.nivel-card:hover{
+    transform:translateY(-4px);
+    border-color:#ffe160;
+}
+
+.nivel-card.selecionado{
+    border-color:#47ff9a;
+    background:rgba(71,255,154,.14);
+}
+
+.nivel-card.bloqueado{
+    opacity:.35;
+    cursor:not-allowed;
+}
+
+.nivel1 h3{color:#55ff9c;}
+.nivel2 h3{color:#58c5ff;}
+.nivel3 h3{color:#ffd750;}
+.nivel4 h3{color:#ff7474;}
+
+/* ================================
+PAINEL
+================================ */
+
+.painel{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:10px;
+    margin-bottom:20px;
+}
+
+.card{
+    background:rgba(255,255,255,.09);
+    border-radius:15px;
+    padding:14px;
+    text-align:center;
+    border:1px solid rgba(255,255,255,.10);
+}
+
+.card span{
+    display:block;
+    font-size:11px;
+    color:#badbc4;
+    text-transform:uppercase;
+    margin-bottom:5px;
+}
+
+.card strong{
+    font-size:24px;
+}
+
+/* ================================
+ÁREA DO JOGO
+================================ */
+
+.area-jogo{
+    background:rgba(0,0,0,.27);
+    border-radius:24px;
+    padding:30px;
+    box-shadow:0 20px 45px rgba(0,0,0,.3);
+}
+
+#nomeNivel{
+    text-align:center;
+    color:#ffe160;
+    font-size:27px;
+    font-weight:bold;
+    margin-bottom:8px;
+}
+
+.meta{
+    text-align:center;
+    color:#d6eadc;
+    margin-bottom:15px;
+}
+
+.cronometro-area{
+    text-align:center;
+    margin-bottom:22px;
+}
+
+#cronometro{
+    font-size:82px;
+    font-weight:bold;
+    color:#46ff99;
+}
+
+#cronometro.alerta{
+    color:#ffd93f;
+}
+
+#cronometro.perigo{
+    color:#ff4d4d;
+    animation:piscar .6s infinite;
+}
+
+@keyframes piscar{
+    50%{
+        opacity:.35;
+        transform:scale(1.09);
+    }
+}
+
+.barra{
+    height:16px;
+    background:rgba(255,255,255,.15);
+    border-radius:30px;
+    overflow:hidden;
+}
+
+#barraTempo{
+    height:100%;
+    width:100%;
+    background:linear-gradient(90deg,#47ff9a,#ffe160);
+    transition:width 1s linear;
+}
+
+.palavra-area{
+    min-height:270px;
+    border-radius:20px;
+    background:rgba(255,255,255,.06);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:25px;
+}
+
+.icone{
+    font-size:62px;
+}
+
+#mensagem{
+    margin-top:12px;
+    font-size:20px;
+    color:#e1f5e7;
+}
+
+#palavraProfessor{
+    display:none;
+    margin:18px 0;
+    color:#ffe160;
+    font-size:45px;
+    font-weight:bold;
+    letter-spacing:5px;
+}
+
+#categoria{
+    margin-top:14px;
+    background:#ffe160;
+    color:#17351f;
+    font-weight:bold;
+    border-radius:25px;
+    padding:8px 20px;
+}
+
+/* ================================
+BOTÕES
+================================ */
+
+.botoes{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:12px;
+    margin-top:24px;
+}
+
+button{
+    border:none;
+    border-radius:12px;
+    padding:14px 20px;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.2s;
+}
+
+button:hover{
+    transform:translateY(-2px);
+    filter:brightness(1.08);
+}
+
+button:disabled{
+    opacity:.35;
+    cursor:not-allowed;
+    transform:none;
+}
+
+.btn-principal{
+    background:#ffe160;
+    color:#162a1d;
+}
+
+.btn-falar{
+    background:#1976d2;
+    color:white;
+}
+
+.btn-mostrar{
+    background:#8e24aa;
+    color:white;
+}
+
+.btn-acerto{
+    background:#00c853;
+    color:white;
+}
+
+.btn-erro{
+    background:#e53935;
+    color:white;
+}
+
+.btn-proximo{
+    background:#fb8c00;
+    color:white;
+}
+
+.btn-ranking{
+    background:#00acc1;
+    color:white;
+}
+
+.btn-secundario{
+    background:#607d8b;
+    color:white;
+}
+
+.btn-finalizar{
+    background:#673ab7;
+    color:white;
+}
+
+.btn-certificado{
+    background:#1565c0;
+    color:white;
+}
+
+.btn-perigo{
+    background:#c62828;
+    color:white;
+}
+
+/* ================================
+RELATÓRIO
+================================ */
+
+.relatorio{
+    display:none;
+    background:rgba(0,0,0,.42);
+    border-radius:20px;
+    padding:25px;
+    margin-top:25px;
+    text-align:center;
+}
+
+.relatorio h2{
+    color:#ffe160;
+}
+
+.relatorio-grid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:10px;
+    margin:20px 0;
+}
+
+.relatorio-card{
+    background:rgba(255,255,255,.08);
+    padding:15px;
+    border-radius:14px;
+}
+
+.relatorio-card strong{
+    display:block;
+    font-size:26px;
+    margin-top:5px;
+}
+
+.aprovado{
+    color:#50ff9d;
+}
+
+.reprovado{
+    color:#ff7878;
+}
+
+.historico{
+    max-height:250px;
+    overflow:auto;
+    text-align:left;
+    margin-top:20px;
+}
+
+.historico div{
+    padding:8px;
+    border-bottom:1px solid rgba(255,255,255,.12);
+}
+
+.certo{
+    color:#53ff9d;
+}
+
+.errado{
+    color:#ff7c7c;
+}
+
+/* ================================
+MODAIS
+================================ */
+
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:9999;
+    background:rgba(0,0,0,.83);
+    padding:25px 15px;
+    overflow:auto;
+}
+
+.modal-conteudo{
+    max-width:1100px;
+    margin:auto;
+    background:#102d1d;
+    border-radius:22px;
+    padding:25px;
+}
+
+.modal-topo{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.modal-topo h2{
+    color:#ffe160;
+}
+
+/* ================================
+RANKING
+================================ */
+
+.tabela-area{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    min-width:900px;
+    border-collapse:collapse;
+}
+
+th{
+    background:rgba(255,225,96,.15);
+    color:#ffe160;
+    padding:12px;
+}
+
+td{
+    padding:12px;
+    text-align:center;
+    border-bottom:1px solid rgba(255,255,255,.10);
+}
+
+tr:nth-child(even){
+    background:rgba(255,255,255,.035);
+}
+
+.posicao{
+    font-size:22px;
+    font-weight:bold;
+}
+
+/* ================================
+PÓDIO
+================================ */
+
+.podio-area{
+    display:flex;
+    justify-content:center;
+    align-items:flex-end;
+    gap:20px;
+    min-height:390px;
+    margin-top:25px;
+}
+
+.podio{
+    width:220px;
+    text-align:center;
+}
+
+.podio-avatar{
+    font-size:70px;
+    margin-bottom:8px;
+}
+
+.podio-nome{
+    font-size:18px;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+.podio-base{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    border-radius:16px 16px 0 0;
+    color:#10271a;
+    font-weight:bold;
+    padding:15px;
+}
+
+.primeiro .podio-base{
+    height:220px;
+    background:#ffd54f;
+}
+
+.segundo .podio-base{
+    height:170px;
+    background:#e0e0e0;
+}
+
+.terceiro .podio-base{
+    height:130px;
+    background:#cd8c50;
+}
+
+.podio-posicao{
+    font-size:48px;
+}
+
+.podio-pontos{
+    margin-top:8px;
+    font-size:16px;
+}
+
+/* ================================
+CERTIFICADO
+================================ */
+
+.certificado{
+    display:none;
+    background:white;
+    color:#1d3325;
+    max-width:1050px;
+    min-height:650px;
+    margin:20px auto;
+    padding:55px;
+    border:15px double #1c6538;
+    text-align:center;
+}
+
+.certificado h1{
+    font-size:50px;
+    color:#1c6538;
+    margin-bottom:25px;
+}
+
+.certificado h2{
+    font-size:31px;
+    margin:20px 0;
+}
+
+.certificado p{
+    font-size:20px;
+    line-height:1.7;
+}
+
+.certificado .nome-certificado{
+    font-size:40px;
+    font-weight:bold;
+    color:#b88700;
+    margin:28px 0;
+    border-bottom:2px solid #b88700;
+    display:inline-block;
+    padding:0 40px 8px;
+}
+
+.assinaturas{
+    display:flex;
+    justify-content:space-around;
+    margin-top:70px;
+}
+
+.assinatura{
+    width:280px;
+    border-top:1px solid #333;
+    padding-top:8px;
+}
+
+/* ================================
+FINAL DA PARTICIPAÇÃO
+================================ */
+
+.resumo-final{
+    display:none;
+    margin-top:25px;
+    border-radius:20px;
+    padding:30px;
+    background:rgba(255,255,255,.09);
+    text-align:center;
+}
+
+.resumo-final h2{
+    color:#ffe160;
+    font-size:32px;
+    margin-bottom:20px;
+}
+
+.resumo-final .pontuacao-final{
+    font-size:60px;
+    font-weight:bold;
+    color:#51ff9c;
+}
+
+/* ================================
+RESPONSIVO
+================================ */
+
+@media(max-width:850px){
+
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .niveis{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .painel{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .relatorio-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .podio-area{
+        gap:6px;
+    }
+
+    .podio{
+        width:32%;
+    }
+
+    header h1{
+        font-size:31px;
+    }
+
+    #cronometro{
+        font-size:60px;
+    }
+
+}
+
+footer{
+    text-align:center;
+    margin-top:25px;
+    color:#a6c9b0;
+    font-size:13px;
+}
+
+/* ================================
+IMPRESSÃO
+================================ */
+
+@media print{
+
+    body *{
+        visibility:hidden;
+    }
+
+    #certificado,
+    #certificado *{
+        visibility:visible;
+    }
+
+    #certificado{
+        display:block !important;
+        position:absolute;
+        top:0;
+        left:0;
+        width:100%;
+        max-width:none;
+        min-height:100vh;
+        margin:0;
+    }
+
+}
+
+</style>
 </head>
 
 <body>
 
-<div class="game-container">
+<div class="container">
 
-  <header class="header">
-    <div>
-      <h1>📚 Desafio da Leitura</h1>
-      <p>Fluência, atenção e velocidade na leitura</p>
-            <P> Formador: Prof. Edivan Junior</P>
-<p> Desenvolvedor Prof. Nixo Auli</p>
-    </div>
+<header>
 
-    <div class="score-box">
-      ⭐ Pontos: <span id="score">0</span>
-    </div>
-  </header>
+<h1>🎙️ Soletrando - DGP / SEMED SSBV</h1>
 
+<p>JOGOS DIGITAIS COMO RECURSO PEDAGÓGICO</p>
+<P>DESENVOLVIDO PELO PROF. NIXO AULI</P>
 
-  <!-- =========================
-       TELA INICIAL
-  ========================== -->
 
-  <section id="startScreen">
+</header>
 
-    <div class="start-card">
 
-      <div class="icon">📖💣</div>
+<!-- CADASTRO -->
 
-      <h2>Desafio da Leitura</h2>
+<div class="cadastro" id="cadastro">
 
-      <p>
-        Leia cada palavra em voz alta e pressione
-        <strong>“Li a palavra”</strong> para continuar.
-        Complete os três níveis enquanto o cronômetro registra
-        seu tempo.
-      </p>
+<h2>👨‍🎓 Cadastro do Participante</h2>
 
-      <div class="levels-preview">
+<div class="form-grid">
 
-        <div class="level-preview">
-          <strong>NÍVEL 1</strong>
-          60 palavras
-        </div>
+<div class="form-group">
 
-        <div class="level-preview">
-          <strong>NÍVEL 2</strong>
-          Pseudopalavras
-        </div>
+<label>Nome do aluno</label>
 
-        <div class="level-preview">
-          <strong>NÍVEL 3</strong>
-          Leitura de texto
-        </div>
+<input
+type="text"
+id="nomeAluno"
+placeholder="Digite o nome completo">
 
-      </div>
+</div>
 
-      <button class="btn btn-primary" onclick="startGame()">
-        🚀 COMEÇAR DESAFIO
-      </button>
+<div class="form-group">
 
-    </div>
+<label>Turma</label>
 
-  </section>
+<input
+type="text"
+id="turmaAluno"
+placeholder="Ex.: 5º Ano A">
 
+</div>
 
-  <!-- =========================
-       JOGO
-  ========================== -->
+<div class="form-group">
 
-  <section id="gameScreen">
+<label>Escola</label>
 
-    <div class="game-grid">
+<input
+type="text"
+id="escolaAluno"
+placeholder="Nome da escola">
 
-      <main class="reading-card">
+</div>
 
-        <div>
+</div>
 
-          <span class="level-badge" id="levelBadge">
-            NÍVEL 1
-          </span>
+<div class="botoes">
 
-          <h2 id="levelTitle">
-            Leitura de Palavras
-          </h2>
+<button
+class="btn-principal"
+onclick="cadastrarAluno()">
+✅ Cadastrar Participante
+</button>
 
-          <p id="instructions">
-            Leia a palavra em voz alta.
-          </p>
+<button
+class="btn-ranking"
+onclick="abrirRanking()">
+🏆 Ranking Geral
+</button>
 
-        </div>
+<button
+class="btn-finalizar"
+onclick="abrirPodio()">
+🥇 Ver Pódio
+</button>
 
-
-        <div class="word-area">
-
-          <div id="wordDisplay">
-            MOLA
-          </div>
-
-          <div id="textDisplay"></div>
-
-        </div>
-
-
-        <div>
-
-          <div class="controls">
-
-            <button
-              id="nextButton"
-              class="btn"
-              onclick="nextItem()"
-            >
-              ✅ LI A PALAVRA
-            </button>
-
-          </div>
-
-
-          <div class="progress-container">
-
-            <div class="progress-info">
-
-              <span>
-                Progresso
-              </span>
-
-              <span id="progressText">
-                1 / 60
-              </span>
-
-            </div>
-
-            <div class="progress-bar">
-              <div id="progress"></div>
-            </div>
-
-          </div>
-
-        </div>
-
-      </main>
-
-
-      <!-- BOMBA -->
-
-      <aside class="timer-panel">
-
-        <h3>⏱️ Cronômetro</h3>
-
-        <div class="bomb-wrapper">
-
-          <div class="fuse"></div>
-
-          <div class="spark">
-            ✨
-          </div>
-
-          <div class="bomb">
-
-            <div class="bomb-timer" id="timer">
-              00:00
-            </div>
-
-          </div>
-
-        </div>
-
-        <div class="timer-label">
-          💣 Tempo restante neste nível
-        </div>
-
-
-        <div class="stats">
-
-          <div class="stat">
-            <span>Nível atual</span>
-            <strong id="statLevel">1</strong>
-          </div>
-
-          <div class="stat">
-            <span>Itens concluídos</span>
-            <strong id="statItems">0</strong>
-          </div>
-
-          <div class="stat">
-            <span>Acertos no nível</span>
-            <strong id="statScore">0</strong>
-          </div>
-
-        </div>
-
-      </aside>
-
-    </div>
-
-  </section>
+</div>
 
 </div>
 
 
-<!-- =========================
-     MODAL NÍVEL COMPLETO
-========================== -->
+<!-- PARTICIPANTE -->
 
-<div id="levelComplete">
+<div class="aluno-atual" id="alunoAtualArea">
 
-  <div class="modal-card">
+👨‍🎓 Participante:
+<strong id="nomeParticipante"></strong>
 
-    <div class="emoji">
-      🎉
-    </div>
+&nbsp; | &nbsp;
 
-    <h2>
-      Nível concluído!
-    </h2>
+Turma:
+<strong id="turmaParticipante"></strong>
 
-    <p id="levelMessage">
-      Excelente leitura!
-    </p>
+&nbsp; | &nbsp;
 
-    <div class="result-grid">
-
-      <div class="result-box">
-        <span>Tempo</span>
-        <strong id="levelTime">
-          00:00
-        </strong>
-      </div>
-
-      <div class="result-box">
-        <span>Acertos</span>
-        <strong id="levelPoints">0/0</strong>
-      </div>
-
-      <div class="result-box">
-        <span>Desempenho</span>
-        <strong id="levelPercent">0%</strong>
-      </div>
-
-    </div>
-
-    <button
-      class="btn btn-primary"
-      onclick="goNextLevel()"
-    >
-      PRÓXIMO NÍVEL ➜
-    </button>
-
-  </div>
+Pontos:
+<strong id="pontosTotaisAluno">0</strong>
 
 </div>
 
 
-<!-- =========================
-     FIM
-========================== -->
+<!-- NÍVEIS -->
 
-<div id="gameComplete">
+<div class="selecao-niveis" id="selecaoNiveis">
 
-  <div class="modal-card">
+<h2>🎯 Fases do Campeonato</h2>
 
-    <div class="emoji">
-      🏆
-    </div>
+<div class="niveis">
 
-    <h2>
-      Desafio concluído!
-    </h2>
+<div
+class="nivel-card nivel1 selecionado"
+id="cardNivel1"
+onclick="selecionarNivel(1)">
 
-    <p>
-      Parabéns! Você completou todos os níveis
-      do Desafio da Leitura.
-    </p>
+<h3>🌱 Nível 1</h3>
+<p>Fácil</p>
+<small>Fase inicial</small>
 
-    <div class="timeout-report">
-      <h3>📊 Relatório final por nível</h3>
-      <div id="finalLevelReports" class="saved-reports"></div>
-    </div>
+</div>
 
-    <button
-      class="btn btn-primary"
-      onclick="restartGame()"
-    >
-      🔄 JOGAR NOVAMENTE
-    </button>
+<div
+class="nivel-card nivel2 bloqueado"
+id="cardNivel2"
+onclick="selecionarNivel(2)">
 
-  </div>
+<h3>⭐ Nível 2</h3>
+<p>Intermediário</p>
+<small>Classificatória</small>
+
+</div>
+
+<div
+class="nivel-card nivel3 bloqueado"
+id="cardNivel3"
+onclick="selecionarNivel(3)">
+
+<h3>🔥 Nível 3</h3>
+<p>Difícil</p>
+<small>Semifinal</small>
+
+</div>
+
+<div
+class="nivel-card nivel4 bloqueado"
+id="cardNivel4"
+onclick="selecionarNivel(4)">
+
+<h3>👑 Nível 4</h3>
+<p>Campeão</p>
+<small>Grande final</small>
+
+</div>
+
+</div>
+
+<div class="botoes">
+
+<button
+class="btn-principal"
+onclick="iniciarNivel()">
+▶ Iniciar Fase
+</button>
+
+<button
+class="btn-ranking"
+onclick="abrirRanking()">
+🏆 Ranking
+</button>
+
+<button
+class="btn-finalizar"
+onclick="finalizarParticipacao()">
+🏁 Finalizar Participação
+</button>
+
+<button
+class="btn-secundario"
+onclick="novoAluno()">
+👨‍🎓 Novo Aluno
+</button>
+
+</div>
 
 </div>
 
 
+<!-- PAINEL -->
 
-<!-- =========================
-     ESCOLHA DE NÍVEL APÓS O TEMPO
-========================= -->
-<div id="timeoutLevelChoice">
-  <div class="timeout-choice-card">
-    <div class="boom-icon">💥</div>
-    <h2>Tempo esgotado!</h2>
-    <p>A bomba explodiu. Confira o relatório deste nível antes de escolher para onde deseja seguir.</p>
+<div class="painel">
 
-    <div class="timeout-report">
-      <h3 id="timeoutReportTitle">📊 Relatório do Nível</h3>
-      <div class="report-grid">
-        <div class="report-item"><span>Acertos</span><strong id="reportHits">0</strong></div>
-        <div class="report-item"><span>Total</span><strong id="reportTotal">0</strong></div>
-        <div class="report-item"><span>Desempenho</span><strong id="reportPercent">0%</strong></div>
-        <div class="report-item"><span>Tempo</span><strong id="reportTime">01:00</strong></div>
-      </div>
-      <div class="saved-reports" id="savedReports"></div>
-    </div>
-
-    <p><strong>Escolha o próximo nível:</strong></p>
-    <div class="level-choice-buttons">
-      <button class="level-choice-btn" onclick="chooseLevelAfterTimeout(1)">📗 NÍVEL 1</button>
-      <button class="level-choice-btn" onclick="chooseLevelAfterTimeout(2)">🧩 NÍVEL 2</button>
-      <button class="level-choice-btn" onclick="chooseLevelAfterTimeout(3)">📖 NÍVEL 3</button>
-    </div>
-
-    <button class="repeat-level-btn" onclick="repeatCurrentLevelAfterTimeout()">🔄 REPETIR O NÍVEL ATUAL</button>
-  </div>
+<div class="card">
+<span>Nível</span>
+<strong id="nivelPainel">1</strong>
 </div>
+
+<div class="card">
+<span>Palavra</span>
+<strong id="numeroPalavra">0/10</strong>
+</div>
+
+<div class="card">
+<span>Acertos</span>
+<strong id="acertos">0</strong>
+</div>
+
+<div class="card">
+<span>Erros</span>
+<strong id="erros">0</strong>
+</div>
+
+<div class="card">
+<span>Pontos da fase</span>
+<strong id="pontos">0</strong>
+</div>
+
+<div class="card">
+<span>Total acumulado</span>
+<strong id="totalAcumulado">0</strong>
+</div>
+
+</div>
+
+
+<!-- JOGO -->
+
+<div class="area-jogo">
+
+<div id="nomeNivel">
+Nível 1 • Fácil
+</div>
+
+<div class="meta">
+
+🎯 Classificação:
+<strong>7 acertos em 10 palavras</strong>
+
+</div>
+
+<div class="cronometro-area">
+
+<div id="cronometro">
+20
+</div>
+
+<div class="barra">
+<div id="barraTempo"></div>
+</div>
+
+</div>
+
+<div class="palavra-area">
+
+<div class="icone">
+🔊
+</div>
+
+<div id="mensagem">
+Cadastre o aluno para começar.
+</div>
+
+<div id="palavraProfessor">
+PALAVRA
+</div>
+
+<div id="categoria">
+Aguardando
+</div>
+
+</div>
+
+<div class="botoes">
+
+<button
+id="btnFalar"
+class="btn-falar"
+onclick="falarPalavra()"
+disabled>
+🔊 Repetir Palavra
+</button>
+
+<button
+id="btnMostrar"
+class="btn-mostrar"
+onclick="mostrarPalavra()"
+disabled>
+👁 Mostrar ao Professor
+</button>
+
+<button
+id="btnAcerto"
+class="btn-acerto"
+onclick="registrarResposta(true)"
+disabled>
+✅ Acertou
+</button>
+
+<button
+id="btnErro"
+class="btn-erro"
+onclick="registrarResposta(false)"
+disabled>
+❌ Errou
+</button>
+
+<button
+id="btnProximo"
+class="btn-proximo"
+onclick="proximaPalavra()"
+disabled>
+➡ Próxima Palavra
+</button>
+
+</div>
+
+</div>
+
+
+<!-- RELATÓRIO -->
+
+<div class="relatorio" id="relatorio">
+
+<h2 id="tituloRelatorio">
+🏆 Resultado
+</h2>
+
+<div class="relatorio-grid">
+
+<div class="relatorio-card">
+Aluno
+<strong id="relAluno">-</strong>
+</div>
+
+<div class="relatorio-card">
+Acertos
+<strong id="relAcertos">0</strong>
+</div>
+
+<div class="relatorio-card">
+Erros
+<strong id="relErros">0</strong>
+</div>
+
+<div class="relatorio-card">
+Pontos
+<strong id="relPontos">0</strong>
+</div>
+
+<div class="relatorio-card">
+Total geral
+<strong id="relTotal">0</strong>
+</div>
+
+</div>
+
+<h2 id="situacaoAluno"></h2>
+
+<br>
+
+<h3 id="desempenho"></h3>
+
+<div class="historico" id="historico"></div>
+
+<div class="botoes">
+
+<button
+class="btn-principal"
+id="btnProximoNivel"
+onclick="avancarNivel()">
+🚀 Próximo Nível
+</button>
+
+<button
+class="btn-principal"
+id="btnRefazer"
+onclick="refazerNivel()">
+🔄 Refazer Fase
+</button>
+
+<button
+class="btn-finalizar"
+onclick="finalizarParticipacao()">
+🏁 Finalizar Participação
+</button>
+
+<button
+class="btn-ranking"
+onclick="abrirRanking()">
+🏆 Ranking
+</button>
+
+</div>
+
+</div>
+
+
+<!-- RESUMO FINAL -->
+
+<div class="resumo-final" id="resumoFinal">
+
+<h2>🏁 Participação Finalizada</h2>
+
+<p>
+Participante:
+<strong id="finalNome"></strong>
+</p>
+
+<br>
+
+<p>Pontuação total</p>
+
+<div class="pontuacao-final" id="finalPontos">
+0
+</div>
+
+<p id="finalResultado"></p>
+
+<div class="botoes">
+
+<button
+class="btn-certificado"
+onclick="gerarCertificado()">
+📜 Gerar Certificado
+</button>
+
+<button
+class="btn-ranking"
+onclick="abrirRanking()">
+🏆 Ranking Geral
+</button>
+
+<button
+class="btn-finalizar"
+onclick="abrirPodio()">
+🥇 Ver Pódio
+</button>
+
+<button
+class="btn-secundario"
+onclick="novoAluno()">
+👨‍🎓 Próximo Participante
+</button>
+
+</div>
+
+</div>
+
+<footer>
+Sistema Soletrando DGP- SEMED SSBV • Desenvolvido pelo Prof. Nixo AulI
+</footer>
+
+</div>
+
+
+<!-- RANKING -->
+
+<div class="modal" id="modalRanking">
+
+<div class="modal-conteudo">
+
+<div class="modal-topo">
+
+<h2>🏆 Ranking Geral</h2>
+
+<button
+class="btn-perigo"
+onclick="fecharRanking()">
+✕ Fechar
+</button>
+
+</div>
+
+<div class="tabela-area">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Posição</th>
+<th>Aluno</th>
+<th>Turma</th>
+<th>Nível</th>
+<th>Fases</th>
+<th>Acertos</th>
+<th>Pontos</th>
+</tr>
+
+</thead>
+
+<tbody id="corpoRanking"></tbody>
+
+</table>
+
+</div>
+
+<div class="botoes">
+
+<button
+class="btn-finalizar"
+onclick="fecharRanking(); abrirPodio();">
+🥇 Mostrar Pódio
+</button>
+
+<button
+class="btn-perigo"
+onclick="limparRanking()">
+🗑 Limpar Ranking
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- PÓDIO -->
+
+<div class="modal" id="modalPodio">
+
+<div class="modal-conteudo">
+
+<div class="modal-topo">
+
+<h2>🏆 Pódio do Soletrando</h2>
+
+<button
+class="btn-perigo"
+onclick="fecharPodio()">
+✕ Fechar
+</button>
+
+</div>
+
+<div class="podio-area" id="podioArea"></div>
+
+</div>
+
+</div>
+
+
+<!-- CERTIFICADO -->
+
+<div class="certificado" id="certificado">
+
+<h1>🏆 CERTIFICADO</h1>
+
+<p>
+Certificamos que
+</p>
+
+<div
+class="nome-certificado"
+id="certNome">
+Nome do aluno
+</div>
+
+<p>
+participou do
+<strong>Campeonato Escolar Soletrando</strong>,
+demonstrando dedicação, conhecimento e compromisso
+com o desenvolvimento da leitura, escrita e ortografia.
+</p>
+
+<h2 id="certResultado"></h2>
+
+<p>
+Pontuação total:
+<strong id="certPontos"></strong>
+</p>
+
+<p>
+Nível alcançado:
+<strong id="certNivel"></strong>
+</p>
+
+<br>
+
+<p id="certEscola"></p>
+
+<div class="assinaturas">
+
+<div class="assinatura">
+Professor(a) / Organização
+</div>
+
+<div class="assinatura">
+Gestão Escolar
+</div>
+
+</div>
+
+</div>
+
 
 <script>
 
-/* ============================================================
-   DADOS DO JOGO
-============================================================ */
+/* =====================================================
+CONFIGURAÇÕES
+===================================================== */
 
-const nivel1 = [
-"MOLA","GIRAFA","CAMA","PENA","MENINO","POMADA","SETE","BONECA",
-"JOGO","CASACO","DADO","RETA","CEBOLA","CASA","DELEGADO","MURO",
-"LAGO","VOLUME","FOGO","CABELO","LÃ","FAVORITO","VERDE","MASSA",
-"TURISTA","ALGODÃO","CONVIDADO","NETO","COLA","ESPORTIVO","PILOTO",
-"MONTANHA","GRÃO","CINTURA","CREME","FAXINA","NÓ","MULHER","CASULO",
-"XERIFE","FORNO","QUALIDADE","PULO","REGRA","TESOURO","SOM","RODELA",
-"MODELO","RODA","DOZE","SALAME","PÁ","TOPETE","GEMADA","ÁGUA","CHÃO",
-"NAPOLITANO","COMPLETO","RARO","SECRETA"
-];
+const TEMPO_MAXIMO = 20;
+
+const PALAVRAS_POR_NIVEL = 10;
+
+const MINIMO_ACERTOS = 7;
 
 
-const nivel2 = [
-"NIRA","FEPINO","VONA","LIBITE","GETO","VORENO","MEPA","CONOTE",
-"FARA","MEFIFO","ZALO","RETOPADA","FI","BAGISO","DOZE","CEZ",
-"DELAFITU","TASEFA","SEGO","FITU","NODELO","APETENCE","FO","PEDALEICO",
-"TAE","CACODACIO","TAMIFA","NANES","JATAETE","RAPASO","DELAFITU","TASEFA",
-"SEGO","FITU","NODELO","APETENCE","FO","PEDALEICO","TAE","CACODACIO",
-"DOLUTO","NANES","JATAETE","RAPASO","POMEGADA","POMEGADA", "TARCELA", "RAX", "GAJACE", 
-"DEGA", "LEFE", "MORTABO", "VUFO", "DOLUTOO", "DONU"
-];
+/* =====================================================
+BANCO DE PALAVRAS
+===================================================== */
 
+const niveis = {
 
-const textoNivel3 = `
-O CACHORRO PIPOCA FOI VISITAR A FAZENDA DA VOVÓ JUNTO COM SEU DONO,
-BINHO, E LEVOU SEU OSSINHO FAVORITO COM ELE.
+1:{
+nome:"Nível 1 • Fácil",
+categoria:"Fácil",
 
-ELE ESTAVA BEM FELIZ ROENDO SEU OSSO... QUANDO UM GATO APARECEU.
+palavras:[
+"CASA",
+"BOLA",
+"MOLA",
+"PATO",
+"GATO",
+"DADO",
+"FADA",
+"SAPO",
+"LAGO",
+"FOGO",
+"CAMA",
+"PENA",
+"RATO",
+"BOCA",
+"LUVA",
+"MESA",
+"VACA",
+"MATO",
+"FITA",
+"BICO",
+"VIDA",
+"REDE",
+"PIPA",
+"LOBO",
+"SUCO",
+"ROSA",
+"VELA",
+"LEÃO",
+"RUA",
+"OVO"
+]
+},
 
-O PIPOCA FOI ATRÁS DO GATO E, QUANDO VOLTOU, O OSSO SUMIU.
+2:{
+nome:"Nível 2 • Intermediário",
+categoria:"Intermediário",
 
-O CÃO PROCUROU O OSSO EM TODOS OS LUGARES, MAS NADA DE ENCONTRAR
-O SEU OSSINHO.
+palavras:[
+"ESCOLA",
+"JANELA",
+"BONECA",
+"GIRAFA",
+"CADEIRA",
+"CADERNO",
+"MENINO",
+"MENINA",
+"CEBOLA",
+"CASACO",
+"POMADA",
+"TESOURA",
+"COELHO",
+"ABELHA",
+"GALINHA",
+"CACHORRO",
+"BRINQUEDO",
+"FLORESTA",
+"PRINCESA",
+"CHOCOLATE",
+"AMARELO",
+"PLANETA",
+"ESTRELA",
+"CAMISETA",
+"FAMÍLIA",
+"IGREJA",
+"JARDIM",
+"CORAGEM",
+"AMIZADE",
+"FUTEBOL"
+]
+},
 
-ANDAVA TRISTE PELA FAZENDA, COM O RABINHO ENTRE AS PERNAS E CHORANDO.
+3:{
+nome:"Nível 3 • Difícil",
+categoria:"Difícil",
 
-OLHOU PARA O GALPÃO, QUANDO, DE REPENTE, UM MILAGRE ACONTECEU:
-SEU OSSO ESTAVA LÁ DENTRO!
+palavras:[
+"COMPUTADOR",
+"TECNOLOGIA",
+"MATEMÁTICA",
+"EDUCAÇÃO",
+"PROFESSOR",
+"BIBLIOTECA",
+"CONHECIMENTO",
+"CRIATIVIDADE",
+"APRENDIZAGEM",
+"INTELIGÊNCIA",
+"INDEPENDÊNCIA",
+"TRANSFORMAÇÃO",
+"EXPERIÊNCIA",
+"COMUNICAÇÃO",
+"OPORTUNIDADE",
+"COMUNIDADE",
+"RESPONSÁVEL",
+"DESCOBERTA",
+"CONSTRUÇÃO",
+"IMAGINAÇÃO",
+"ORGANIZAÇÃO",
+"CONCENTRAÇÃO",
+"PARTICIPAÇÃO",
+"SOLIDARIEDADE",
+"UNIVERSIDADE",
+"BRASILEIRO",
+"GEOGRAFIA",
+"HISTÓRIA",
+"CIENTISTA",
+"DESAFIADOR"
+]
+},
 
-AO CHEGAR LÁ, AS LUZES DO GALPÃO ACENDERAM DO NADA,
-E TODOS OS ANIMAIS DA FAZENDA GRITARAM: SURPRESA!!
+4:{
+nome:"Nível 4 • Campeão",
+categoria:"Campeão",
 
-TUDO NÃO PASSAVA DE UM PLANO DOS ANIMAIS DA FAZENDA PARA FAZER
-UMA FESTA SURPRESA PARA O PIPOCA, QUE ESTAVA DE ANIVERSÁRIO.
+palavras:[
+"PARALELEPÍPEDO",
+"EXTRAORDINÁRIO",
+"RESPONSABILIDADE",
+"SUSTENTABILIDADE",
+"CONSCIENTIZAÇÃO",
+"CARACTERÍSTICA",
+"DESENVOLVIMENTO",
+"INTERDISCIPLINARIDADE",
+"BIODIVERSIDADE",
+"REPRESENTATIVIDADE",
+"CONSTITUCIONALIDADE",
+"INTERNACIONALIZAÇÃO",
+"PROFISSIONALIZAÇÃO",
+"EXPERIMENTAÇÃO",
+"CONTEXTUALIZAÇÃO",
+"EMPREENDEDORISMO",
+"ACESSIBILIDADE",
+"CONTEMPORANEIDADE",
+"MULTICULTURALIDADE",
+"EXCEPCIONALIDADE",
+"INCOMPATIBILIDADE",
+"QUESTIONAMENTO",
+"PLANEJAMENTO",
+"APERFEIÇOAMENTO"
+]
+}
 
-ASSIM, OS ANIMAIS CONFRATERNIZARAM E BRINCARAM O DIA TODO NA FESTA!
-`;
-
-
-const paragrafosNivel3 = textoNivel3
-  .trim()
-  .split(/\n\s*\n/)
-  .map(paragrafo => paragrafo.replace(/\n/g, " ").trim())
-  .filter(Boolean);
-
-let level3VisibleParagraphs = 0;
-
-
-/* ============================================================
-   VARIÁVEIS
-============================================================ */
-
-let currentLevel = 1;
-
-let currentIndex = 0;
-
-let score = 0; // pontuação somente do nível atual
-
-let totalItems = 0; // acertos somente do nível atual
-
-let levelReports = {
-  1: null,
-  2: null,
-  3: null
 };
 
-const LEVEL_TIME = 60; // tempo de cada nível em segundos
 
-let timeLeft = LEVEL_TIME;
+/* =====================================================
+VARIÁVEIS
+===================================================== */
 
-let totalElapsedSeconds = 0;
+let alunoAtual = null;
 
-let timerInterval;
+let nivelSelecionado = 1;
 
-let isExploding = false;
+let nivelMaximoLiberado = 1;
+
+let palavrasRodada = [];
+
+let indiceAtual = 0;
+
+let palavraAtual = "";
+
+let tempo = TEMPO_MAXIMO;
+
+let intervalo = null;
+
+let acertos = 0;
+
+let erros = 0;
+
+let pontos = 0;
+
+let pontosAcumulados = 0;
+
+let acertosAcumulados = 0;
+
+let fasesConcluidas = 0;
+
+let historico = [];
+
+let respondido = false;
+
+let classificado = false;
+
+let participacaoFinalizada = false;
 
 
-/* ============================================================
-   INICIAR JOGO
-============================================================ */
+/* =====================================================
+ÁUDIO DE ALERTA
+===================================================== */
 
-function startGame() {
+let audioContext = null;
 
-  document.getElementById("startScreen").style.display = "none";
 
-  document.getElementById("gameScreen").style.display = "block";
+function tocarBeep(){
 
-  currentLevel = 1;
+try{
 
-  currentIndex = 0;
+if(!audioContext){
 
-  score = 0;
+audioContext =
+new(
+window.AudioContext ||
+window.webkitAudioContext
+)();
 
-  totalItems = 0;
-
-  levelReports = { 1: null, 2: null, 3: null };
-
-  timeLeft = LEVEL_TIME;
-
-  totalElapsedSeconds = 0;
-
-  updateScore();
-
-  loadLevel();
-
-  startLevelTimer();
 }
 
+const oscillator =
+audioContext.createOscillator();
 
-/* ============================================================
-   CRONÔMETRO
-============================================================ */
+const gain =
+audioContext.createGain();
 
-function updateTimer() {
+oscillator.connect(gain);
 
-  const minutes = Math.floor(timeLeft / 60);
+gain.connect(
+audioContext.destination
+);
 
-  const secs = timeLeft % 60;
+oscillator.frequency.value =
+880;
 
-  document.getElementById("timer").innerText =
-    String(minutes).padStart(2,"0") +
-    ":" +
-    String(secs).padStart(2,"0");
+oscillator.type =
+"sine";
+
+gain.gain.value =
+0.12;
+
+oscillator.start();
+
+setTimeout(
+function(){
+
+oscillator.stop();
+
+},
+130
+);
+
+}catch(e){
+
+console.log(
+"Áudio não disponível."
+);
+
 }
-
-
-function startLevelTimer() {
-
-  clearInterval(timerInterval);
-
-  timeLeft = LEVEL_TIME;
-
-  updateTimer();
-
-  timerInterval = setInterval(() => {
-
-    timeLeft--;
-    totalElapsedSeconds++;
-
-    updateTimer();
-
-    if(timeLeft <= 0) {
-      clearInterval(timerInterval);
-      timeLeft = 0;
-      updateTimer();
-      handleTimeOut();
-    }
-
-  }, 1000);
-}
-
-
-function handleTimeOut() {
-
-  if (isExploding) return;
-  isExploding = true;
-
-  const bombWrapper = document.querySelector(".bomb-wrapper");
-  const nextButton = document.getElementById("nextButton");
-
-  // Bloqueia apenas durante a animação da explosão.
-  nextButton.disabled = true;
-  bombWrapper.classList.add("exploding");
-  document.body.classList.add("screen-shake");
-
-  playExplosionSound();
-
-  setTimeout(() => {
-    bombWrapper.classList.remove("exploding");
-    document.body.classList.remove("screen-shake");
-    nextButton.disabled = false;
-    isExploding = false;
-
-    // Registra e exibe o relatório apenas deste nível.
-    saveCurrentLevelReport();
-    showTimeoutReport();
-
-    // Depois da explosão, libera a escolha de nível dentro do próprio jogo.
-    document.getElementById("timeoutLevelChoice").style.display = "flex";
-  }, 900);
-}
-
-
-
-function getLevelTotal(level) {
-  if (level === 1) return nivel1.length;
-  if (level === 2) return nivel2.length;
-  return paragrafosNivel3.length;
-}
-
-function saveCurrentLevelReport() {
-  const total = getLevelTotal(currentLevel);
-  const hits = Math.min(totalItems, total);
-  const percent = total > 0 ? Math.round((hits / total) * 100) : 0;
-
-  levelReports[currentLevel] = {
-    level: currentLevel,
-    hits,
-    total,
-    percent,
-    time: LEVEL_TIME
-  };
-}
-
-function showTimeoutReport() {
-  const report = levelReports[currentLevel];
-  if (!report) return;
-
-  document.getElementById("timeoutReportTitle").innerText =
-    `📊 Relatório do Nível ${report.level}`;
-  document.getElementById("reportHits").innerText = report.hits;
-  document.getElementById("reportTotal").innerText = report.total;
-  document.getElementById("reportPercent").innerText = report.percent + "%";
-  document.getElementById("reportTime").innerText = formatTime(report.time);
-
-  const saved = Object.values(levelReports).filter(Boolean);
-  document.getElementById("savedReports").innerHTML = saved.length
-    ? "<strong>Resultados registrados:</strong>" + saved.map(r =>
-        `<div class="saved-report-line">Nível ${r.level}: <strong>${r.hits}/${r.total}</strong> acertos (${r.percent}%)</div>`
-      ).join("")
-    : "";
-}
-
-function resetCurrentLevelCounters() {
-  currentIndex = 0;
-  score = 0;
-  totalItems = 0;
-  updateScore();
-}
-
-function chooseLevelAfterTimeout(level) {
-  if (![1, 2, 3].includes(level)) return;
-
-  document.getElementById("timeoutLevelChoice").style.display = "none";
-  currentLevel = level;
-  resetCurrentLevelCounters();
-  loadLevel();
-  startLevelTimer();
-}
-
-function repeatCurrentLevelAfterTimeout() {
-  document.getElementById("timeoutLevelChoice").style.display = "none";
-  resetCurrentLevelCounters();
-  loadLevel();
-  startLevelTimer();
-}
-
-function playExplosionSound() {
-  try {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    const audioCtx = new AudioContext();
-    const duration = 1.1;
-    const bufferSize = Math.floor(audioCtx.sampleRate * duration);
-    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-
-    for (let i = 0; i < bufferSize; i++) {
-      const t = i / audioCtx.sampleRate;
-      const envelope = Math.pow(1 - t / duration, 3);
-      data[i] = (Math.random() * 2 - 1) * envelope;
-    }
-
-    const noise = audioCtx.createBufferSource();
-    noise.buffer = buffer;
-
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = "lowpass";
-    filter.frequency.setValueAtTime(1200, audioCtx.currentTime);
-    filter.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + duration);
-
-    const gain = audioCtx.createGain();
-    gain.gain.setValueAtTime(1, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-
-    const boom = audioCtx.createOscillator();
-    const boomGain = audioCtx.createGain();
-    boom.type = "sine";
-    boom.frequency.setValueAtTime(95, audioCtx.currentTime);
-    boom.frequency.exponentialRampToValueAtTime(35, audioCtx.currentTime + .55);
-    boomGain.gain.setValueAtTime(.8, audioCtx.currentTime);
-    boomGain.gain.exponentialRampToValueAtTime(.01, audioCtx.currentTime + .6);
-
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(audioCtx.destination);
-
-    boom.connect(boomGain);
-    boomGain.connect(audioCtx.destination);
-
-    noise.start();
-    boom.start();
-    boom.stop(audioCtx.currentTime + .6);
-  } catch (error) {
-    console.warn("Não foi possível reproduzir o som da explosão:", error);
-  }
-}
-
-
-function formatTime(value) {
-
-  const minutes = Math.floor(value / 60);
-
-  const secs = value % 60;
-
-  return (
-    String(minutes).padStart(2,"0") +
-    ":" +
-    String(secs).padStart(2,"0")
-  );
-}
-
-
-/* ============================================================
-   CARREGAR NÍVEL
-============================================================ */
-
-function loadLevel() {
-
-  currentIndex = 0;
-
-  const word = document.getElementById("wordDisplay");
-
-  const text = document.getElementById("textDisplay");
-
-  const button = document.getElementById("nextButton");
-
-
-  if(currentLevel === 1) {
-
-    document.getElementById("levelBadge").innerText = "NÍVEL 1";
-
-    document.getElementById("levelTitle").innerText =
-      "Leitura de Palavras";
-
-    document.getElementById("instructions").innerText =
-      "Leia cada palavra em voz alta e avance.";
-
-    word.style.display = "block";
-
-    text.style.display = "none";
-
-    button.innerText = "✅ LI A PALAVRA";
-
-    showWord();
-
-  }
-
-
-  else if(currentLevel === 2) {
-
-    document.getElementById("levelBadge").innerText = "NÍVEL 2";
-
-    document.getElementById("levelTitle").innerText =
-      "Desafio das Pseudopalavras";
-
-    document.getElementById("instructions").innerText =
-      "Leia exatamente como está escrito, mesmo que a palavra não exista.";
-
-    word.style.display = "block";
-
-    text.style.display = "none";
-
-    button.innerText = "✅ LI A PALAVRA";
-
-    showWord();
-
-  }
-
-
-  else {
-
-    document.getElementById("levelBadge").innerText = "NÍVEL 3";
-
-    document.getElementById("levelTitle").innerText =
-      "Leitura de Texto por Parágrafos";
-
-    document.getElementById("instructions").innerText =
-      "Leia o parágrafo destacado em verde. O professor deve clicar no botão para liberar o próximo parágrafo.";
-
-    word.style.display = "none";
-
-    text.style.display = "block";
-
-    text.innerHTML = "";
-    level3VisibleParagraphs = 0;
-    renderLevel3Paragraphs(1);
-
-    button.innerText = paragrafosNivel3.length > 1
-      ? "➡️ PRÓXIMO PARÁGRAFO"
-      : "🏁 FINALIZAR LEITURA";
-
-    document.getElementById("progressText").innerText =
-      `Parágrafo 1 / ${paragrafosNivel3.length}`;
-
-    document.getElementById("progress").style.width =
-      (100 / paragrafosNivel3.length) + "%";
-  }
-
-
-  document.getElementById("statLevel").innerText = currentLevel;
 
 }
 
 
-/* ============================================================
-   NÍVEL 3 - PARÁGRAFOS CONTROLADOS PELO PROFESSOR
-============================================================ */
+/* =====================================================
+CADASTRO
+===================================================== */
 
-function renderLevel3Paragraphs(count) {
-  const text = document.getElementById("textDisplay");
-  const button = document.getElementById("nextButton");
-  const visibleCount = Math.max(1, Math.min(count, paragrafosNivel3.length));
+function cadastrarAluno(){
 
-  if (visibleCount === level3VisibleParagraphs) return;
+const nome =
+document
+.getElementById("nomeAluno")
+.value
+.trim();
 
-  level3VisibleParagraphs = visibleCount;
+const turma =
+document
+.getElementById("turmaAluno")
+.value
+.trim();
 
-  text.innerHTML = paragrafosNivel3
-    .slice(0, visibleCount)
-    .map((paragrafo, index) => {
-      const isActive = index === visibleCount - 1;
-      const classe = isActive ? "active" : "read";
-      return `<p class="level3-paragraph ${classe}">${paragrafo}</p>`;
-    })
-    .join("");
-
-  const active = text.querySelector(".level3-paragraph.active");
-  if (active) {
-    active.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }
-
-  document.getElementById("progressText").innerText =
-    `Parágrafo ${visibleCount} / ${paragrafosNivel3.length}`;
-
-  document.getElementById("progress").style.width =
-    ((visibleCount / paragrafosNivel3.length) * 100) + "%";
-
-  button.innerText = visibleCount >= paragrafosNivel3.length
-    ? "🏁 FINALIZAR LEITURA"
-    : "➡️ PRÓXIMO PARÁGRAFO";
-}
-
-/* ============================================================
-   MOSTRAR PALAVRA
-============================================================ */
-
-function showWord() {
-
-  let words =
-    currentLevel === 1
-    ? nivel1
-    : nivel2;
+const escola =
+document
+.getElementById("escolaAluno")
+.value
+.trim();
 
 
-  const word = document.getElementById("wordDisplay");
+if(nome === ""){
 
-  word.style.animation = "none";
+alert(
+"Digite o nome do aluno."
+);
 
-  void word.offsetWidth;
-
-  word.style.animation = "wordEnter .35s ease";
-
-  word.innerText = words[currentIndex];
-
-
-  const total = words.length;
-
-  document.getElementById("progressText").innerText =
-    (currentIndex + 1) + " / " + total;
-
-
-  const percentage =
-    ((currentIndex + 1) / total) * 100;
-
-
-  document.getElementById("progress").style.width =
-    percentage + "%";
-}
-
-
-/* ============================================================
-   PRÓXIMO ITEM
-============================================================ */
-
-function nextItem() {
-
-  if (isExploding) return;
-
-  if(currentLevel === 3) {
-
-    // Cada clique do professor confirma a leitura do parágrafo atual.
-    score += 1;
-    totalItems++;
-    updateScore();
-
-    if (level3VisibleParagraphs < paragrafosNivel3.length) {
-      renderLevel3Paragraphs(level3VisibleParagraphs + 1);
-    } else {
-      finishLevel();
-    }
-
-    return;
-  }
-
-
-  let words =
-    currentLevel === 1
-    ? nivel1
-    : nivel2;
-
-
-  score += 1;
-
-  totalItems++;
-
-  updateScore();
-
-
-  currentIndex++;
-
-
-  if(currentIndex >= words.length) {
-
-    finishLevel();
-
-  }
-
-  else {
-
-    showWord();
-
-  }
+return;
 
 }
 
 
-/* ============================================================
-   ATUALIZAR PONTOS
-============================================================ */
+alunoAtual = {
 
-function updateScore() {
+nome:nome,
 
-  document.getElementById("score").innerText =
-    score;
+turma:
+turma ||
+"Não informada",
 
-  document.getElementById("statScore").innerText =
-    score;
+escola:
+escola ||
+"Não informada"
 
-  document.getElementById("statItems").innerText =
-    totalItems;
+};
+
+
+nivelSelecionado = 1;
+
+nivelMaximoLiberado = 1;
+
+pontosAcumulados = 0;
+
+acertosAcumulados = 0;
+
+fasesConcluidas = 0;
+
+participacaoFinalizada = false;
+
+
+document
+.getElementById(
+"nomeParticipante"
+)
+.innerText =
+alunoAtual.nome;
+
+
+document
+.getElementById(
+"turmaParticipante"
+)
+.innerText =
+alunoAtual.turma;
+
+
+document
+.getElementById(
+"pontosTotaisAluno"
+)
+.innerText =
+0;
+
+
+document
+.getElementById(
+"cadastro"
+)
+.style.display =
+"none";
+
+
+document
+.getElementById(
+"alunoAtualArea"
+)
+.style.display =
+"block";
+
+
+document
+.getElementById(
+"resumoFinal"
+)
+.style.display =
+"none";
+
+
+atualizarBloqueioNiveis();
+
+
+document
+.getElementById(
+"mensagem"
+)
+.innerText =
+"Participante cadastrado. Inicie o Nível 1.";
+
+
+falarMensagem(
+"Participante " +
+alunoAtual.nome +
+" cadastrado. Prepare-se para o Soletrando."
+);
+
 }
 
 
-/* ============================================================
-   FINALIZAR NÍVEL
-============================================================ */
+/* =====================================================
+BLOQUEIO DOS NÍVEIS
+===================================================== */
 
-function finishLevel() {
+function atualizarBloqueioNiveis(){
 
-  clearInterval(timerInterval);
+for(
+let nivel = 1;
+nivel <= 4;
+nivel++
+){
 
-  const levelTime = LEVEL_TIME - timeLeft;
-
-  // Guarda o resultado do nível sem somar com os demais.
-  const total = getLevelTotal(currentLevel);
-  const hits = Math.min(totalItems, total);
-  levelReports[currentLevel] = {
-    level: currentLevel,
-    hits,
-    total,
-    percent: total > 0 ? Math.round((hits / total) * 100) : 0,
-    time: levelTime
-  };
-
-  if(currentLevel === 3) {
-
-    finishGame();
-
-    return;
-  }
+const card =
+document
+.getElementById(
+"cardNivel" + nivel
+);
 
 
-  document.getElementById("levelTime").innerText =
-    formatTime(levelTime);
+if(
+nivel <=
+nivelMaximoLiberado
+){
 
+card
+.classList
+.remove(
+"bloqueado"
+);
 
-  document.getElementById("levelPoints").innerText =
-    hits + "/" + total;
+}else{
 
-  document.getElementById("levelPercent").innerText =
-    levelReports[currentLevel].percent + "%";
+card
+.classList
+.add(
+"bloqueado"
+);
 
-
-  if(currentLevel === 1) {
-
-    document.getElementById("levelMessage").innerText =
-      "Muito bem! Você concluiu as 60 palavras. Agora vamos aumentar o desafio.";
-
-  }
-
-  else {
-
-    document.getElementById("levelMessage").innerText =
-      "Excelente! Você venceu as pseudopalavras. Agora chegou a hora da leitura do texto.";
-
-  }
-
-
-  document.getElementById("levelComplete").style.display =
-    "flex";
 }
 
-
-/* ============================================================
-   PRÓXIMO NÍVEL
-============================================================ */
-
-function goNextLevel() {
-
-  document.getElementById("levelComplete").style.display =
-    "none";
-
-  currentLevel++;
-
-  resetCurrentLevelCounters();
-
-  loadLevel();
-
-  startLevelTimer();
+}
 
 }
 
 
-/* ============================================================
-   FINAL
-============================================================ */
+/* =====================================================
+SELECIONAR NÍVEL
+===================================================== */
 
-function finishGame() {
+function selecionarNivel(
+nivel
+){
 
-  clearInterval(timerInterval);
+if(
+nivel >
+nivelMaximoLiberado
+){
 
+alert(
+"Este nível ainda está bloqueado."
+);
 
-  const reports = Object.values(levelReports).filter(Boolean);
-  document.getElementById("finalLevelReports").innerHTML = reports.length
-    ? reports.map(r =>
-        `<div class="saved-report-line">Nível ${r.level}: <strong>${r.hits}/${r.total}</strong> acertos | ${r.percent}% | ${formatTime(r.time)}</div>`
-      ).join("")
-    : "Nenhum relatório registrado.";
+return;
 
-  document.getElementById("gameComplete").style.display =
-    "flex";
 }
 
 
-/* ============================================================
-   REINICIAR
-============================================================ */
+nivelSelecionado =
+nivel;
 
-function restartGame() {
 
-  clearInterval(timerInterval);
+document
+.querySelectorAll(
+".nivel-card"
+)
+.forEach(
+card =>
+card.classList.remove(
+"selecionado"
+)
+);
 
-  levelReports = { 1: null, 2: null, 3: null };
-  score = 0;
-  totalItems = 0;
-  currentIndex = 0;
 
-  document.getElementById("gameComplete").style.display =
-    "none";
+document
+.getElementById(
+"cardNivel" + nivel
+)
+.classList.add(
+"selecionado"
+);
 
-  document.getElementById("timeoutLevelChoice").style.display =
-    "none";
 
-  document.getElementById("gameScreen").style.display =
-    "none";
+document
+.getElementById(
+"nivelPainel"
+)
+.innerText =
+nivel;
 
-  document.getElementById("startScreen").style.display =
-    "flex";
+
+document
+.getElementById(
+"nomeNivel"
+)
+.innerText =
+niveis[nivel].nome;
+
 }
+
+
+/* =====================================================
+EMBARALHAR
+===================================================== */
+
+function embaralhar(
+array
+){
+
+const copia =
+[...array];
+
+
+for(
+let i =
+copia.length - 1;
+i > 0;
+i--
+){
+
+const j =
+Math.floor(
+Math.random() *
+(i + 1)
+);
+
+
+[
+copia[i],
+copia[j]
+]
+=
+[
+copia[j],
+copia[i]
+];
+
+}
+
+return copia;
+
+}
+
+
+/* =====================================================
+INICIAR FASE
+===================================================== */
+
+function iniciarNivel(){
+
+if(!alunoAtual){
+
+alert(
+"Cadastre um participante primeiro."
+);
+
+return;
+
+}
+
+
+if(
+participacaoFinalizada
+){
+
+alert(
+"Esta participação já foi finalizada."
+);
+
+return;
+
+}
+
+
+if(
+nivelSelecionado >
+nivelMaximoLiberado
+){
+
+alert(
+"Este nível ainda está bloqueado."
+);
+
+return;
+
+}
+
+
+speechSynthesis.cancel();
+
+
+palavrasRodada =
+embaralhar(
+niveis[
+nivelSelecionado
+]
+.palavras
+)
+.slice(
+0,
+PALAVRAS_POR_NIVEL
+);
+
+
+indiceAtual = 0;
+
+acertos = 0;
+
+erros = 0;
+
+pontos = 0;
+
+historico = [];
+
+classificado = false;
+
+
+document
+.getElementById(
+"relatorio"
+)
+.style.display =
+"none";
+
+
+document
+.getElementById(
+"selecaoNiveis"
+)
+.style.display =
+"none";
+
+
+atualizarPlacar();
+
+carregarPalavra();
+
+}
+
+
+/* =====================================================
+CARREGAR PALAVRA
+===================================================== */
+
+function carregarPalavra(){
+
+if(
+indiceAtual >=
+palavrasRodada.length
+){
+
+finalizarNivel();
+
+return;
+
+}
+
+
+respondido = false;
+
+
+palavraAtual =
+palavrasRodada[
+indiceAtual
+];
+
+
+document
+.getElementById(
+"numeroPalavra"
+)
+.innerText =
+(indiceAtual + 1)
++
+"/"
++
+PALAVRAS_POR_NIVEL;
+
+
+document
+.getElementById(
+"palavraProfessor"
+)
+.innerText =
+palavraAtual;
+
+
+document
+.getElementById(
+"palavraProfessor"
+)
+.style.display =
+"none";
+
+
+document
+.getElementById(
+"categoria"
+)
+.innerText =
+niveis[
+nivelSelecionado
+]
+.categoria;
+
+
+document
+.getElementById(
+"mensagem"
+)
+.innerText =
+"🔊 Escute atentamente e soletre a palavra.";
+
+
+habilitarBotoes();
+
+falarPalavra();
+
+iniciarCronometro();
+
+}
+
+
+/* =====================================================
+CRONÔMETRO
+===================================================== */
+
+function iniciarCronometro(){
+
+clearInterval(
+intervalo
+);
+
+
+tempo =
+TEMPO_MAXIMO;
+
+
+atualizarCronometro();
+
+
+intervalo =
+setInterval(
+function(){
+
+tempo--;
+
+
+if(
+tempo <= 5 &&
+tempo > 0
+){
+
+tocarBeep();
+
+}
+
+
+atualizarCronometro();
+
+
+if(
+tempo <= 0
+){
+
+clearInterval(
+intervalo
+);
+
+tempoEsgotado();
+
+}
+
+},
+1000
+);
+
+}
+
+
+function atualizarCronometro(){
+
+const cronometro =
+document
+.getElementById(
+"cronometro"
+);
+
+
+cronometro.innerText =
+tempo;
+
+
+document
+.getElementById(
+"barraTempo"
+)
+.style.width =
+(
+tempo /
+TEMPO_MAXIMO *
+100
+)
++
+"%";
+
+
+cronometro
+.classList
+.remove(
+"alerta",
+"perigo"
+);
+
+
+if(
+tempo <= 10 &&
+tempo > 5
+){
+
+cronometro
+.classList
+.add(
+"alerta"
+);
+
+}
+
+
+if(
+tempo <= 5
+){
+
+cronometro
+.classList
+.add(
+"perigo"
+);
+
+}
+
+}
+
+
+/* =====================================================
+TEMPO ESGOTADO
+===================================================== */
+
+function tempoEsgotado(){
+
+if(respondido){
+
+return;
+
+}
+
+
+respondido = true;
+
+erros++;
+
+
+historico.push({
+
+palavra:
+palavraAtual,
+
+resultado:
+"Tempo esgotado"
+
+});
+
+
+document
+.getElementById(
+"mensagem"
+)
+.innerText =
+"⏰ TEMPO ESGOTADO!";
+
+
+document
+.getElementById(
+"palavraProfessor"
+)
+.style.display =
+"block";
+
+
+atualizarPlacar();
+
+bloquearResposta();
+
+
+document
+.getElementById(
+"btnProximo"
+)
+.disabled =
+false;
+
+
+falarMensagem(
+"Tempo esgotado. A palavra era " +
+palavraAtual
+);
+
+}
+
+
+/* =====================================================
+REGISTRAR RESPOSTA
+===================================================== */
+
+function registrarResposta(
+correta
+){
+
+if(respondido){
+
+return;
+
+}
+
+
+respondido = true;
+
+
+clearInterval(
+intervalo
+);
+
+
+if(correta){
+
+acertos++;
+
+
+const bonus =
+tempo * 5;
+
+
+pontos +=
+100 +
+bonus;
+
+
+historico.push({
+
+palavra:
+palavraAtual,
+
+resultado:
+"Acertou"
+
+});
+
+
+document
+.getElementById(
+"mensagem"
+)
+.innerText =
+"🎉 PARABÉNS! ACERTOU!";
+
+
+falarMensagem(
+"Muito bem " +
+alunoAtual.nome +
+". Você acertou."
+);
+
+
+}else{
+
+erros++;
+
+
+historico.push({
+
+palavra:
+palavraAtual,
+
+resultado:
+"Errou"
+
+});
+
+
+document
+.getElementById(
+"mensagem"
+)
+.innerText =
+"❌ Não foi dessa vez.";
+
+
+falarMensagem(
+"Não foi dessa vez. Continue tentando."
+);
+
+}
+
+
+document
+.getElementById(
+"palavraProfessor"
+)
+.style.display =
+"block";
+
+
+atualizarPlacar();
+
+bloquearResposta();
+
+
+document
+.getElementById(
+"btnProximo"
+)
+.disabled =
+false;
+
+}
+
+
+/* =====================================================
+PRÓXIMA PALAVRA
+===================================================== */
+
+function proximaPalavra(){
+
+clearInterval(
+intervalo
+);
+
+speechSynthesis.cancel();
+
+indiceAtual++;
+
+carregarPalavra();
+
+}
+
+
+/* =====================================================
+MOSTRAR PALAVRA
+===================================================== */
+
+function mostrarPalavra(){
+
+const elemento =
+document
+.getElementById(
+"palavraProfessor"
+);
+
+
+elemento.style.display =
+elemento.style.display ===
+"block"
+?
+"none"
+:
+"block";
+
+}
+
+
+/* =====================================================
+FALAR PALAVRA
+===================================================== */
+
+function falarPalavra(){
+
+if(!palavraAtual){
+
+return;
+
+}
+
+
+speechSynthesis.cancel();
+
+
+const fala =
+new SpeechSynthesisUtterance(
+palavraAtual
+);
+
+
+fala.lang =
+"pt-BR";
+
+fala.rate =
+0.58;
+
+fala.pitch =
+1;
+
+fala.volume =
+1;
+
+
+const vozes =
+speechSynthesis
+.getVoices();
+
+
+const vozBR =
+vozes.find(
+voz =>
+voz.lang.includes(
+"pt-BR"
+)
+);
+
+
+if(vozBR){
+
+fala.voice =
+vozBR;
+
+}
+
+
+speechSynthesis.speak(
+fala
+);
+
+}
+
+
+/* =====================================================
+FALAR MENSAGEM
+===================================================== */
+
+function falarMensagem(
+texto
+){
+
+speechSynthesis.cancel();
+
+
+const fala =
+new SpeechSynthesisUtterance(
+texto
+);
+
+
+fala.lang =
+"pt-BR";
+
+fala.rate =
+0.84;
+
+
+speechSynthesis.speak(
+fala
+);
+
+}
+
+
+/* =====================================================
+PLACAR
+===================================================== */
+
+function atualizarPlacar(){
+
+document
+.getElementById(
+"acertos"
+)
+.innerText =
+acertos;
+
+
+document
+.getElementById(
+"erros"
+)
+.innerText =
+erros;
+
+
+document
+.getElementById(
+"pontos"
+)
+.innerText =
+pontos;
+
+
+document
+.getElementById(
+"totalAcumulado"
+)
+.innerText =
+pontosAcumulados;
+
+}
+
+
+/* =====================================================
+BOTÕES
+===================================================== */
+
+function habilitarBotoes(){
+
+document
+.getElementById(
+"btnFalar"
+)
+.disabled =
+false;
+
+document
+.getElementById(
+"btnMostrar"
+)
+.disabled =
+false;
+
+document
+.getElementById(
+"btnAcerto"
+)
+.disabled =
+false;
+
+document
+.getElementById(
+"btnErro"
+)
+.disabled =
+false;
+
+document
+.getElementById(
+"btnProximo"
+)
+.disabled =
+true;
+
+}
+
+
+function bloquearResposta(){
+
+document
+.getElementById(
+"btnFalar"
+)
+.disabled =
+true;
+
+document
+.getElementById(
+"btnAcerto"
+)
+.disabled =
+true;
+
+document
+.getElementById(
+"btnErro"
+)
+.disabled =
+true;
+
+}
+
+
+function bloquearTodos(){
+
+[
+"btnFalar",
+"btnMostrar",
+"btnAcerto",
+"btnErro",
+"btnProximo"
+
+]
+.forEach(
+id => {
+
+document
+.getElementById(id)
+.disabled =
+true;
+
+});
+
+}
+
+
+/* =====================================================
+FINALIZAR NÍVEL
+===================================================== */
+
+function finalizarNivel(){
+
+clearInterval(
+intervalo
+);
+
+speechSynthesis.cancel();
+
+
+classificado =
+acertos >=
+MINIMO_ACERTOS;
+
+
+if(classificado){
+
+pontosAcumulados +=
+pontos;
+
+acertosAcumulados +=
+acertos;
+
+fasesConcluidas++;
+
+
+if(
+nivelSelecionado < 4
+){
+
+nivelMaximoLiberado =
+Math.max(
+nivelMaximoLiberado,
+nivelSelecionado + 1
+);
+
+}
+
+}
+
+
+salvarRanking();
+
+
+document
+.getElementById(
+"relatorio"
+)
+.style.display =
+"block";
+
+
+document
+.getElementById(
+"relAluno"
+)
+.innerText =
+alunoAtual.nome;
+
+
+document
+.getElementById(
+"relAcertos"
+)
+.innerText =
+acertos;
+
+
+document
+.getElementById(
+"relErros"
+)
+.innerText =
+erros;
+
+
+document
+.getElementById(
+"relPontos"
+)
+.innerText =
+pontos;
+
+
+document
+.getElementById(
+"relTotal"
+)
+.innerText =
+pontosAcumulados;
+
+
+document
+.getElementById(
+"pontosTotaisAluno"
+)
+.innerText =
+pontosAcumulados;
+
+
+document
+.getElementById(
+"totalAcumulado"
+)
+.innerText =
+pontosAcumulados;
+
+
+const percentual =
+Math.round(
+acertos /
+PALAVRAS_POR_NIVEL *
+100
+);
+
+
+document
+.getElementById(
+"desempenho"
+)
+.innerHTML =
+"Desempenho: " +
+percentual +
+"%";
+
+
+if(classificado){
+
+document
+.getElementById(
+"situacaoAluno"
+)
+.innerHTML =
+"<span class='aprovado'>✅ CLASSIFICADO!</span>";
+
+
+document
+.getElementById(
+"btnRefazer"
+)
+.style.display =
+"none";
+
+
+if(
+nivelSelecionado < 4
+){
+
+document
+.getElementById(
+"btnProximoNivel"
+)
+.style.display =
+"inline-block";
+
+}else{
+
+document
+.getElementById(
+"btnProximoNivel"
+)
+.style.display =
+"none";
+
+
+document
+.getElementById(
+"situacaoAluno"
+)
+.innerHTML =
+"<span class='aprovado'>👑 GRANDE FINAL CONCLUÍDA!</span>";
+
+}
+
+
+falarMensagem(
+"Parabéns " +
+alunoAtual.nome +
+". Você está classificado."
+);
+
+
+}else{
+
+
+document
+.getElementById(
+"situacaoAluno"
+)
+.innerHTML =
+"<span class='reprovado'>❌ NÃO CLASSIFICADO</span>";
+
+
+document
+.getElementById(
+"btnProximoNivel"
+)
+.style.display =
+"none";
+
+
+document
+.getElementById(
+"btnRefazer"
+)
+.style.display =
+"inline-block";
+
+
+falarMensagem(
+alunoAtual.nome +
+". Você precisa de sete acertos para avançar."
+);
+
+}
+
+
+gerarHistorico();
+
+
+document
+.getElementById(
+"cronometro"
+)
+.innerText =
+"✓";
+
+
+document
+.getElementById(
+"categoria"
+)
+.innerText =
+"Fase concluída";
+
+
+document
+.getElementById(
+"mensagem"
+)
+.innerText =
+classificado
+?
+"🏆 Fase concluída com classificação!"
+:
+"📚 Você pode refazer esta fase.";
+
+
+document
+.getElementById(
+"palavraProfessor"
+)
+.style.display =
+"none";
+
+
+bloquearTodos();
+
+atualizarBloqueioNiveis();
+
+}
+
+
+/* =====================================================
+HISTÓRICO
+===================================================== */
+
+function gerarHistorico(){
+
+const area =
+document
+.getElementById(
+"historico"
+);
+
+
+area.innerHTML =
+"<h3>📋 Palavras desta fase</h3><br>";
+
+
+historico.forEach(
+function(
+item,
+index
+){
+
+const correto =
+item.resultado ===
+"Acertou";
+
+
+area.innerHTML += `
+
+<div>
+
+${index + 1}.
+<strong>
+${item.palavra}
+</strong>
+
+-
+
+<span class="${correto ? "certo" : "errado"}">
+
+${correto ? "✅" : "❌"}
+
+${item.resultado}
+
+</span>
+
+</div>
+
+`;
+
+});
+
+}
+
+
+/* =====================================================
+AVANÇAR NÍVEL
+===================================================== */
+
+function avancarNivel(){
+
+if(
+!classificado ||
+nivelSelecionado >= 4
+){
+
+return;
+
+}
+
+
+nivelSelecionado++;
+
+
+selecionarNivel(
+nivelSelecionado
+);
+
+
+document
+.getElementById(
+"relatorio"
+)
+.style.display =
+"none";
+
+
+iniciarNivel();
+
+}
+
+
+/* =====================================================
+REFAZER
+===================================================== */
+
+function refazerNivel(){
+
+document
+.getElementById(
+"relatorio"
+)
+.style.display =
+"none";
+
+
+iniciarNivel();
+
+}
+
+
+/* =====================================================
+RANKING CONSOLIDADO
+===================================================== */
+
+function salvarRanking(){
+
+if(!alunoAtual){
+
+return;
+
+}
+
+
+let ranking =
+JSON.parse(
+localStorage.getItem(
+"rankingCampeonatoSoletrando"
+)
+)
+||
+[];
+
+
+const nomeChave =
+alunoAtual.nome
+.toLowerCase()
+.trim();
+
+
+const turmaChave =
+alunoAtual.turma
+.toLowerCase()
+.trim();
+
+
+const indice =
+ranking.findIndex(
+item =>
+
+item.nome
+.toLowerCase()
+.trim()
+===
+nomeChave
+
+&&
+
+item.turma
+.toLowerCase()
+.trim()
+===
+turmaChave
+
+);
+
+
+const registro = {
+
+nome:
+alunoAtual.nome,
+
+turma:
+alunoAtual.turma,
+
+escola:
+alunoAtual.escola,
+
+pontos:
+pontosAcumulados,
+
+acertos:
+acertosAcumulados,
+
+fasesConcluidas:
+fasesConcluidas,
+
+nivelAlcancado:
+Math.max(
+nivelSelecionado,
+1
+),
+
+finalizado:
+participacaoFinalizada,
+
+data:
+new Date()
+.toLocaleString(
+"pt-BR"
+)
+
+};
+
+
+if(
+indice >= 0
+){
+
+ranking[indice] =
+registro;
+
+}else{
+
+ranking.push(
+registro
+);
+
+}
+
+
+ranking.sort(
+ordenarRanking
+);
+
+
+localStorage.setItem(
+"rankingCampeonatoSoletrando",
+JSON.stringify(
+ranking
+)
+);
+
+}
+
+
+function ordenarRanking(
+a,
+b
+){
+
+if(
+b.nivelAlcancado !==
+a.nivelAlcancado
+){
+
+return (
+b.nivelAlcancado -
+a.nivelAlcancado
+);
+
+}
+
+
+if(
+b.fasesConcluidas !==
+a.fasesConcluidas
+){
+
+return (
+b.fasesConcluidas -
+a.fasesConcluidas
+);
+
+}
+
+
+if(
+b.pontos !==
+a.pontos
+){
+
+return (
+b.pontos -
+a.pontos
+);
+
+}
+
+
+return (
+b.acertos -
+a.acertos
+);
+
+}
+
+
+/* =====================================================
+RANKING NA TELA
+===================================================== */
+
+function abrirRanking(){
+
+gerarRanking();
+
+
+document
+.getElementById(
+"modalRanking"
+)
+.style.display =
+"block";
+
+}
+
+
+function fecharRanking(){
+
+document
+.getElementById(
+"modalRanking"
+)
+.style.display =
+"none";
+
+}
+
+
+function gerarRanking(){
+
+let ranking =
+JSON.parse(
+localStorage.getItem(
+"rankingCampeonatoSoletrando"
+)
+)
+||
+[];
+
+
+ranking.sort(
+ordenarRanking
+);
+
+
+const corpo =
+document
+.getElementById(
+"corpoRanking"
+);
+
+
+corpo.innerHTML =
+"";
+
+
+if(
+ranking.length === 0
+){
+
+corpo.innerHTML = `
+
+<tr>
+
+<td colspan="7">
+
+Nenhum participante registrado.
+
+</td>
+
+</tr>
+
+`;
+
+return;
+
+}
+
+
+ranking.forEach(
+function(
+item,
+index
+){
+
+let posicao =
+index + 1;
+
+
+if(index === 0){
+
+posicao =
+"🥇";
+
+}else if(
+index === 1
+){
+
+posicao =
+"🥈";
+
+}else if(
+index === 2
+){
+
+posicao =
+"🥉";
+
+}
+
+
+corpo.innerHTML += `
+
+<tr>
+
+<td class="posicao">
+${posicao}
+</td>
+
+<td>
+<strong>
+${item.nome}
+</strong>
+</td>
+
+<td>
+${item.turma}
+</td>
+
+<td>
+${item.nivelAlcancado}
+</td>
+
+<td>
+${item.fasesConcluidas}
+</td>
+
+<td>
+${item.acertos}
+</td>
+
+<td>
+<strong>
+${item.pontos}
+</strong>
+</td>
+
+</tr>
+
+`;
+
+});
+
+}
+
+
+/* =====================================================
+PÓDIO
+===================================================== */
+
+function abrirPodio(){
+
+const ranking =
+JSON.parse(
+localStorage.getItem(
+"rankingCampeonatoSoletrando"
+)
+)
+||
+[];
+
+
+ranking.sort(
+ordenarRanking
+);
+
+
+const podio =
+document
+.getElementById(
+"podioArea"
+);
+
+
+podio.innerHTML =
+"";
+
+
+if(
+ranking.length === 0
+){
+
+podio.innerHTML =
+"<h3>Nenhum participante no ranking.</h3>";
+
+
+document
+.getElementById(
+"modalPodio"
+)
+.style.display =
+"block";
+
+return;
+
+}
+
+
+const primeiro =
+ranking[0] || null;
+
+const segundo =
+ranking[1] || null;
+
+const terceiro =
+ranking[2] || null;
+
+
+function criarPodio(
+item,
+classe,
+medalha,
+posicao
+){
+
+if(!item){
+
+return `
+<div class="podio ${classe}">
+<div class="podio-avatar">❔</div>
+<div class="podio-nome">Aguardando</div>
+<div class="podio-base">
+<div class="podio-posicao">${posicao}º</div>
+</div>
+</div>
+`;
+
+}
+
+
+return `
+
+<div class="podio ${classe}">
+
+<div class="podio-avatar">
+${medalha}
+</div>
+
+<div class="podio-nome">
+${item.nome}
+</div>
+
+<div class="podio-base">
+
+<div class="podio-posicao">
+${posicao}º
+</div>
+
+<div class="podio-pontos">
+${item.pontos} pontos
+</div>
+
+<div>
+${item.turma}
+</div>
+
+</div>
+
+</div>
+
+`;
+
+}
+
+
+podio.innerHTML =
+
+criarPodio(
+segundo,
+"segundo",
+"🥈",
+2
+)
+
++
+
+criarPodio(
+primeiro,
+"primeiro",
+"🥇",
+1
+)
+
++
+
+criarPodio(
+terceiro,
+"terceiro",
+"🥉",
+3
+);
+
+
+document
+.getElementById(
+"modalPodio"
+)
+.style.display =
+"block";
+
+}
+
+
+function fecharPodio(){
+
+document
+.getElementById(
+"modalPodio"
+)
+.style.display =
+"none";
+
+}
+
+
+/* =====================================================
+FINALIZAR PARTICIPAÇÃO
+===================================================== */
+
+function finalizarParticipacao(){
+
+if(!alunoAtual){
+
+alert(
+"Não há participante cadastrado."
+);
+
+return;
+
+}
+
+
+clearInterval(
+intervalo
+);
+
+speechSynthesis.cancel();
+
+
+participacaoFinalizada =
+true;
+
+
+salvarRanking();
+
+
+document
+.getElementById(
+"selecaoNiveis"
+)
+.style.display =
+"none";
+
+
+document
+.getElementById(
+"relatorio"
+)
+.style.display =
+"none";
+
+
+document
+.getElementById(
+"resumoFinal"
+)
+.style.display =
+"block";
+
+
+document
+.getElementById(
+"finalNome"
+)
+.innerText =
+alunoAtual.nome;
+
+
+document
+.getElementById(
+"finalPontos"
+)
+.innerText =
+pontosAcumulados;
+
+
+let resultadoFinal =
+"Participação concluída no Nível " +
+nivelSelecionado +
+".";
+
+
+if(
+fasesConcluidas >= 4
+){
+
+resultadoFinal =
+"👑 Parabéns! Todas as fases foram concluídas.";
+
+}else if(
+fasesConcluidas >= 3
+){
+
+resultadoFinal =
+"🔥 Excelente campanha! O participante chegou à fase final.";
+
+}else if(
+fasesConcluidas >= 2
+){
+
+resultadoFinal =
+"⭐ Ótimo desempenho no campeonato.";
+
+}else{
+
+resultadoFinal =
+"🌱 Participação registrada. Continue praticando!";
+
+}
+
+
+document
+.getElementById(
+"finalResultado"
+)
+.innerText =
+resultadoFinal;
+
+
+document
+.getElementById(
+"mensagem"
+)
+.innerText =
+"🏁 Participação finalizada.";
+
+
+bloquearTodos();
+
+
+falarMensagem(
+"Participação de " +
+alunoAtual.nome +
+" finalizada. Parabéns pelo desafio."
+);
+
+}
+
+
+/* =====================================================
+CERTIFICADO
+===================================================== */
+
+function gerarCertificado(){
+
+if(!alunoAtual){
+
+return;
+
+}
+
+
+document
+.getElementById(
+"certNome"
+)
+.innerText =
+alunoAtual.nome;
+
+
+document
+.getElementById(
+"certPontos"
+)
+.innerText =
+pontosAcumulados +
+" pontos";
+
+
+document
+.getElementById(
+"certNivel"
+)
+.innerText =
+niveis[
+nivelSelecionado
+]
+.nome;
+
+
+document
+.getElementById(
+"certEscola"
+)
+.innerText =
+alunoAtual.escola;
+
+
+let titulo =
+"Participação concluída";
+
+
+if(
+fasesConcluidas >= 4
+){
+
+titulo =
+"👑 Concluiu todas as fases do Soletrando";
+
+}else if(
+fasesConcluidas >= 3
+){
+
+titulo =
+"🔥 Destaque no Campeonato Soletrando";
+
+}else if(
+fasesConcluidas >= 2
+){
+
+titulo =
+"⭐ Excelente participação";
+
+}
+
+
+document
+.getElementById(
+"certResultado"
+)
+.innerText =
+titulo;
+
+
+const certificado =
+document
+.getElementById(
+"certificado"
+);
+
+
+certificado.style.display =
+"block";
+
+
+window.print();
+
+
+setTimeout(
+function(){
+
+certificado.style.display =
+"none";
+
+},
+500
+);
+
+}
+
+
+/* =====================================================
+NOVO ALUNO
+===================================================== */
+
+function novoAluno(){
+
+clearInterval(
+intervalo
+);
+
+speechSynthesis.cancel();
+
+
+alunoAtual = null;
+
+nivelSelecionado = 1;
+
+nivelMaximoLiberado = 1;
+
+pontosAcumulados = 0;
+
+acertosAcumulados = 0;
+
+fasesConcluidas = 0;
+
+acertos = 0;
+
+erros = 0;
+
+pontos = 0;
+
+participacaoFinalizada = false;
+
+
+document
+.getElementById(
+"nomeAluno"
+)
+.value =
+"";
+
+
+document
+.getElementById(
+"turmaAluno"
+)
+.value =
+"";
+
+
+document
+.getElementById(
+"escolaAluno"
+)
+.value =
+"";
+
+
+document
+.getElementById(
+"cadastro"
+)
+.style.display =
+"block";
+
+
+document
+.getElementById(
+"alunoAtualArea"
+)
+.style.display =
+"none";
+
+
+document
+.getElementById(
+"selecaoNiveis"
+)
+.style.display =
+"block";
+
+
+document
+.getElementById(
+"relatorio"
+)
+.style.display =
+"none";
+
+
+document
+.getElementById(
+"resumoFinal"
+)
+.style.display =
+"none";
+
+
+document
+.getElementById(
+"cronometro"
+)
+.innerText =
+20;
+
+
+document
+.getElementById(
+"numeroPalavra"
+)
+.innerText =
+"0/10";
+
+
+document
+.getElementById(
+"mensagem"
+)
+.innerText =
+"Cadastre o próximo participante.";
+
+
+document
+.getElementById(
+"categoria"
+)
+.innerText =
+"Aguardando";
+
+
+document
+.getElementById(
+"barraTempo"
+)
+.style.width =
+"100%";
+
+
+document
+.getElementById(
+"nivelPainel"
+)
+.innerText =
+1;
+
+
+document
+.getElementById(
+"nomeNivel"
+)
+.innerText =
+niveis[1].nome;
+
+
+document
+.querySelectorAll(
+".nivel-card"
+)
+.forEach(
+card =>
+card.classList.remove(
+"selecionado"
+)
+);
+
+
+document
+.getElementById(
+"cardNivel1"
+)
+.classList.add(
+"selecionado"
+);
+
+
+atualizarBloqueioNiveis();
+
+atualizarPlacar();
+
+}
+
+
+/* =====================================================
+LIMPAR RANKING
+===================================================== */
+
+function limparRanking(){
+
+const confirma =
+confirm(
+"Deseja apagar definitivamente todo o ranking?"
+);
+
+
+if(!confirma){
+
+return;
+
+}
+
+
+localStorage.removeItem(
+"rankingCampeonatoSoletrando"
+);
+
+
+gerarRanking();
+
+}
+
+
+/* =====================================================
+VOZES
+===================================================== */
+
+speechSynthesis.onvoiceschanged =
+function(){
+
+speechSynthesis.getVoices();
+
+};
+
+
+/* =====================================================
+FECHAR MODAIS CLICANDO FORA
+===================================================== */
+
+window.addEventListener(
+"click",
+function(event){
+
+const ranking =
+document
+.getElementById(
+"modalRanking"
+);
+
+
+const podio =
+document
+.getElementById(
+"modalPodio"
+);
+
+
+if(
+event.target === ranking
+){
+
+fecharRanking();
+
+}
+
+
+if(
+event.target === podio
+){
+
+fecharPodio();
+
+}
+
+});
 
 </script>
 
